@@ -1,2 +1,2 @@
 # AzureIaC
-Equivalent to common platform.
+Equivalent to common platform that is built by IaC of Azure.
