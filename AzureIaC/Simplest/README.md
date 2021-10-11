@@ -1,9 +1,10 @@
 # Simplest
 
-### Define variables
+### Variables
 
+#### Define
 ```Bash
-vmSize=Standard_F2s_v2
+vmSize=Standard_F4
 vmOS=Win2019Datacenter
 
 location=japanwest
@@ -18,6 +19,17 @@ yourRgName=YourRG
 yourVnetName=YourVnet
 yourSubnetName=YourSubnet
 
+```
+
+#### Check
+```Bash
+echo $vmSize
+echo $vmOS
+echo $location
+
+echo $vmName
+echo $vmUser
+echo $vmPassword
 ```
 
 ### Creating an Azure Bastion
