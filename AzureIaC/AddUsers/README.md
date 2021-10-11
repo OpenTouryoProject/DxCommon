@@ -130,6 +130,7 @@ az account list --output table
 ```
 
 #### Create VM
+Access the created VM via Bastion.
 
 ```Bash
 vmName=YourVM2
