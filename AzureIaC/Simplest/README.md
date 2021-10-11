@@ -102,6 +102,7 @@ az vm create \
 --vnet-name $yourVnetName \
 --subnet $yourSubnetName \
 --public-ip-address ""
+
 ```
 
 ### VNET Peering
