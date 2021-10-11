@@ -11,7 +11,7 @@ azureBastionRgName=AzureBastionRG
 azureBastionVnetName=AzureBastionVnet
 azureBastionSubnetName=AzureBastionSubnet
 jumpboxSubnetName=JumpboxSubnet
-azureBastionPubIPName AzureBastionPubIP
+azureBastionPubIPName=AzureBastionPubIP
 
 yourRgName=YourRG
 yourVnetName=YourVnet
