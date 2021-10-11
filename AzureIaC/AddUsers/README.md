@@ -66,7 +66,9 @@ New-AzRoleDefinition -Role $role
 ### Invite users
 
 ```PowerShell
-$mailAddress = xxxx@yyyy
+$mailAddress = "xxxx@yyyy"
+
+Connect-AzureAD
 
 New-AzureADMSInvitation `
   -InvitedUserDisplayName $mailAddress `
