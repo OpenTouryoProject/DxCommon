@@ -85,17 +85,18 @@ Get-AzureADUser -Filter "UserType eq 'Guest'"
 #### ResourcesGroup
 
 ```PowerShell
-$emailOrUserprincipalname = <emailOrUserprincipalname>
+$emailOrUserprincipalname = "<emailOrUserprincipalname>"
+$yourRgName=YourRG
 
 New-AzRoleAssignment `
 -SignInName $emailOrUserprincipalname `
 -RoleDefinitionName "Virtual Machine Contributor" `
--ResourceGroupName YourRG
+-ResourceGroupName $yourRgName
 
 New-AzRoleAssignment `
 -SignInName $emailOrUserprincipalname `
 -RoleDefinitionName "仮想マシン作成のためVMCに追加する権限" `
--ResourceGroupName YourRG
+-ResourceGroupName $yourRgName
 
 New-AzRoleAssignment `
 -SignInName <emailOrUserprincipalname> `
