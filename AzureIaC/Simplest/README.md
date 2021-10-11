@@ -3,7 +3,8 @@
 ### Define variables
 
 ```Bash
-vmSize=Basic_A2
+vmSize=Standard_F2s_v2
+vmOS=Win2019Datacenter
 
 location=japanwest
 azureBastionName=AzureBastion
@@ -42,6 +43,7 @@ az network bastion create \
   --vnet-name $azureBastionVnetName \
   --public-ip-address $azureBastionPubIPName \
   --location $location
+
 ```
 
 ### Creating an Jumpbox Vm
@@ -62,7 +64,7 @@ az vm create \
 --name $vmName \
 --location $location \
 --size $vmSize \
---image Win2019Datacenter \
+--image $vmOS \
 --admin-user $vmUser \
 --admin-password $vmPassword \
 --vnet-name $azureBastionVnetName \
@@ -77,15 +79,24 @@ vmName=YourVM1
 vmUser=[users名]
 vmPassword=[password]
 
-az group create --name $yourRgName --location $location
-az network vnet create --resource-group $yourRgName --name $yourVnetName --address-prefix 10.1.0.0/16 --subnet-name $yourSubnetName --subnet-prefix 10.1.0.0/24 --location $location
+az group create \
+  --name $yourRgName \
+  --location $location
+
+az network vnet create \
+  --resource-group $yourRgName \
+  --name $yourVnetName \
+  --address-prefix 10.1.0.0/16 \
+  --subnet-name $yourSubnetName \
+  --subnet-prefix 10.1.0.0/24 \
+  --location $location
 
 az vm create \
 --resource-group $yourRgName \
 --name $vmName \
 --location $location \
 --size $vmSize \
---image Win2019Datacenter \
+--image $vmOS \
 --admin-user $vmUser \
 --admin-password $vmPassword \
 --vnet-name $yourVnetName \
