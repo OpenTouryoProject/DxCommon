@@ -66,7 +66,7 @@ az vm create \
 --admin-user $vmUser \
 --admin-password $vmPassword \
 --vnet-name $azureBastionVnetName \
---subnet $vmSubnetName \
+--subnet $JumpboxSubnet \
 --public-ip-address ""
 
 ```
