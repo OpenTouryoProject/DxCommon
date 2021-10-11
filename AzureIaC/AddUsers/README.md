@@ -154,6 +154,8 @@ az vm create \
 --subnet $yourSubnetName \
 --public-ip-address ""
 
+az vm auto-shutdown --resource-group $yourRgName --name $vmName --time 1500
+
 ```
 
 I also confirmed that I can create a VM using My Disk.
