@@ -1,3 +1,151 @@
 # Simplest
--部会メモ（2021年） - Open 棟梁 Wiki > x/x セルフZoom部会（第27回）
-https://opentouryo.osscons.jp/index.php?%E9%83%A8%E4%BC%9A%E3%83%A1%E3%83%A2%EF%BC%882021%E5%B9%B4%EF%BC%89#y1587e0e
+
+### Define variables
+
+```Bash
+vmSize = Basic_A2
+
+location = japanwest
+azureBastionName = AzureBastion
+azureBastionRgName = AzureBastionRG
+azureBastionVnetName = AzureBastionVnet
+azureBastionSubnetName = AzureBastionSubnet
+jumpboxSubnetName = JumpboxSubnet
+azureBastionPubIPName AzureBastionPubIP
+
+yourRgName = YourRG
+yourVnetName = YourVnet
+yourSubnetName = YourSubnet
+
+```
+
+### Creating an Azure Bastion
+```Bash
+az group create --name $azureBastionRgName --location $location
+
+az network vnet create \
+  --resource-group $azureBastionRgName \
+  --name $azureBastionVnetName \
+  --address-prefix 10.0.0.0/16 \
+  --subnet-name $azureBastionSubnetName \
+  --subnet-prefix 10.0.0.0/24 \
+  --location $location
+ 
+az network public-ip create \
+  --resource-group $azureBastionRgName \
+  --name $azureBastionPubIPName \
+  --sku Standard --location $location
+
+az network bastion create \
+  --resource-group $azureBastionRgName \
+  --name $azureBastionName \
+  --vnet-name $azureBastionVnetName \
+  --public-ip-address $azureBastionPubIPName \
+  --location $location
+```
+
+### Creating an Jumpbox Vm
+```Bash
+
+vmName = JumpboxVM1
+vmUser = [users名]
+vmPassword = [password]
+
+az network vnet subnet create \
+  --resource-group $azureBastionRgName \
+  --vnet-name $azureBastionVnetName
+  --name $jumpboxSubnetName \
+  --address-prefixes 10.0.1.0/24 \
+
+az vm create \
+--resource-group $azureBastionRgName \
+--name $vmName \
+--location $location \
+--size $vmSize \
+--image Win2019Datacenter \
+--admin-user $vmUser \
+--admin-password $vmPassword \
+--vnet-name $azureBastionVnetName \
+--subnet $vmSubnetName \
+--public-ip-address ""
+
+```
+
+### Creating a Sandbox
+```Bash
+vmName = YourVM1
+vmUser = [users名]
+vmPassword = [password]
+
+az group create --name $yourRgName --location $location
+az network vnet create --resource-group $yourRgName --name $yourVnetName --address-prefix 10.1.0.0/16 --subnet-name $yourSubnetName --subnet-prefix 10.1.0.0/24 --location $location
+
+az vm create \
+--resource-group $yourRgName \
+--name $vmName \
+--location $location \
+--size $vmSize \
+--image Win2019Datacenter \
+--admin-user $vmUser \
+--admin-password $vmPassword \
+--vnet-name $yourVnetName \
+--subnet $yourSubnetName \
+--public-ip-address ""
+```
+
+### VNET Peering
+
+```Bash
+vNetPeering1Id=AzureBastionVnet-YourVnet
+vNetPeering2Id=YourVnet-AzureBastionVnet
+
+vNet1Id=$(az network vnet show \
+  --resource-group $azureBastionRgName \
+  --name $azureBastionVnetName \
+  --query id --out tsv)
+  
+vNet2Id=$(az network vnet show \
+  --resource-group $yourRgName \
+  --name $yourVnetName \
+  --query id \
+  --out tsv)
+
+az network vnet peering create \
+  --name $vNetPeering1Id \
+  --resource-group $azureBastionRgName \
+  --vnet-name $azureBastionVnetName \
+  --remote-vnet $vNet2Id \
+  --allow-vnet-access
+
+az network vnet peering create \
+  --name $vNetPeering2Id \
+  --resource-group $yourRgName \
+  --vnet-name $yourVnetName \
+  --remote-vnet $vNet1Id \
+  --allow-vnet-access
+```
+
+### Check
+
+#### VNET Peering state
+```Bash
+vNetPeering1Id=AzureBastionVnet-YourVnet
+vNetPeering2Id=YourVnet-AzureBastionVnet
+
+az network vnet peering show \
+  --name AzureBastionVnet-YourVnet \
+  --resource-group AzureBastionRG \
+  --vnet-name AzureBastionVnet \
+  --query peeringState
+
+az network vnet peering show \
+  --name YourVnet-AzureBastionVnet \
+  --resource-group YourRG \
+  --vnet-name YourVnet \
+  --query peeringState
+```
+
+#### List of public IP addresses
+```Bash
+az network public-ip list --output table
+```
