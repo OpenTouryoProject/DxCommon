@@ -122,3 +122,34 @@ New-AzRoleAssignment `
 
 ### Check
 
+#### Exec the Cloud Shell
+
+```Bash
+az account list --output table
+```
+
+#### Create VM
+
+```Bash
+vmSize=Standard_F4
+vmOS=Win2019Datacenter
+location=japanwest
+yourRgName=YourRG
+yourVnetName=YourVnet
+yourSubnetName=YourSubnet
+vmName=YourVM2
+vmUser=[users名]
+vmPassword=[password]
+
+az vm create \
+--resource-group $yourRgName \
+--name $vmName \
+--location $location \
+--size $vmSize \
+--image $vmOS \
+--admin-user $vmUser \
+--admin-password $vmPassword \
+--vnet-name $yourVnetName \
+--subnet $yourSubnetName \
+--public-ip-address ""
+```
