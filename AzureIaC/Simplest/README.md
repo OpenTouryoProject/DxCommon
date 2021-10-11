@@ -3,19 +3,19 @@
 ### Define variables
 
 ```Bash
-vmSize = Basic_A2
+vmSize=Basic_A2
 
-location = japanwest
-azureBastionName = AzureBastion
-azureBastionRgName = AzureBastionRG
-azureBastionVnetName = AzureBastionVnet
-azureBastionSubnetName = AzureBastionSubnet
-jumpboxSubnetName = JumpboxSubnet
+location=japanwest
+azureBastionName=AzureBastion
+azureBastionRgName=AzureBastionRG
+azureBastionVnetName=AzureBastionVnet
+azureBastionSubnetName=AzureBastionSubnet
+jumpboxSubnetName=JumpboxSubnet
 azureBastionPubIPName AzureBastionPubIP
 
-yourRgName = YourRG
-yourVnetName = YourVnet
-yourSubnetName = YourSubnet
+yourRgName=YourRG
+yourVnetName=YourVnet
+yourSubnetName=YourSubnet
 
 ```
 
@@ -47,9 +47,9 @@ az network bastion create \
 ### Creating an Jumpbox Vm
 ```Bash
 
-vmName = JumpboxVM1
-vmUser = [users名]
-vmPassword = [password]
+vmName=JumpboxVM1
+vmUser=[users名]
+vmPassword=[password]
 
 az network vnet subnet create \
   --resource-group $azureBastionRgName \
@@ -73,9 +73,9 @@ az vm create \
 
 ### Creating a Sandbox
 ```Bash
-vmName = YourVM1
-vmUser = [users名]
-vmPassword = [password]
+vmName=YourVM1
+vmUser=[users名]
+vmPassword=[password]
 
 az group create --name $yourRgName --location $location
 az network vnet create --resource-group $yourRgName --name $yourVnetName --address-prefix 10.1.0.0/16 --subnet-name $yourSubnetName --subnet-prefix 10.1.0.0/24 --location $location
