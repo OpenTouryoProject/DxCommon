@@ -3,10 +3,21 @@
 ### Variables
 
 #### Define
+Windows
 ```Bash
 vmSize=Standard_F4
 vmOS=Win2019Datacenter
 
+```
+
+Ubuntu
+```Bash
+vmSize=Standard_F2
+vmOS=UbuntuLTS
+
+```
+
+```Bash
 location=japanwest
 azureBastionName=AzureBastion
 azureBastionRgName=AzureBastionRG
