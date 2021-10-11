@@ -17,6 +17,7 @@ vmOS=UbuntuLTS
 
 ```
 
+ResourcesGroup & Network, etc.
 ```Bash
 location=japanwest
 azureBastionName=AzureBastion
