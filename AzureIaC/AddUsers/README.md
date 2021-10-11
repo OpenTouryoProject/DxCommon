@@ -14,6 +14,8 @@ $subscriptionID = (Get-AzContext).Subscription.Id
 ### Creating a custom role
 
 ```PowerShell
+$subscriptionID = (Get-AzContext).Subscription.Id
+
 $role = Get-AzRoleDefinition "Virtual Machine Contributor"
 $role.Id = $Null
 $role.Name = "仮想マシンの起動と停止"
@@ -86,7 +88,7 @@ Get-AzureADUser -Filter "UserType eq 'Guest'"
 
 ```PowerShell
 $emailOrUserprincipalname = "<emailOrUserprincipalname>"
-$yourRgName=YourRG
+$yourRgName="YourRG"
 
 New-AzRoleAssignment `
 -SignInName $emailOrUserprincipalname `
@@ -99,7 +101,7 @@ New-AzRoleAssignment `
 -ResourceGroupName $yourRgName
 
 New-AzRoleAssignment `
--SignInName <emailOrUserprincipalname> `
+-SignInName $emailOrUserprincipalname `
 -RoleDefinitionName "Azure Cloud Shellの実行のために追加する権限" `
 -ResourceGroupName cloud-shell-storage-southeastasia
 
@@ -108,7 +110,8 @@ New-AzRoleAssignment `
 #### Subscription
 
 ```PowerShell
-$emailOrUserprincipalname = <emailOrUserprincipalname>
+$emailOrUserprincipalname = "<emailOrUserprincipalname>"
+$subscriptionID = (Get-AzContext).Subscription.Id
 
 New-AzRoleAssignment `
 -SignInName $emailOrUserprincipalname `
@@ -116,5 +119,6 @@ New-AzRoleAssignment `
 -Scope /subscriptions/$subscriptionID
 
 ```
+
 ### Check
 
