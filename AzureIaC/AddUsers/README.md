@@ -131,15 +131,15 @@ az account list --output table
 #### Create VM
 
 ```Bash
+vmName=YourVM2
+vmUser=[users名]
+vmPassword=[password]
 vmSize=Standard_F4
 vmOS=Win2019Datacenter
 location=japanwest
 yourRgName=YourRG
 yourVnetName=YourVnet
 yourSubnetName=YourSubnet
-vmName=YourVM2
-vmUser=[users名]
-vmPassword=[password]
 
 az vm create \
 --resource-group $yourRgName \
