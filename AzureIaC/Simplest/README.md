@@ -122,6 +122,9 @@ vNet2Id=$(az network vnet show \
   --query id \
   --out tsv)
 
+echo $vNet1Id
+echo $vNet2Id
+
 az network vnet peering create \
   --name $vNetPeering1Name \
   --resource-group $azureBastionRgName \
