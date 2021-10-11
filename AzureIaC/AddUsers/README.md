@@ -152,4 +152,7 @@ az vm create \
 --vnet-name $yourVnetName \
 --subnet $yourSubnetName \
 --public-ip-address ""
+
 ```
+
+I also confirmed that I can create a VM using My Disk.
