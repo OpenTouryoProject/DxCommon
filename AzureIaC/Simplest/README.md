@@ -53,7 +53,7 @@ vmPassword=[password]
 
 az network vnet subnet create \
   --resource-group $azureBastionRgName \
-  --vnet-name $azureBastionVnetName
+  --vnet-name $azureBastionVnetName \
   --name $jumpboxSubnetName \
   --address-prefixes 10.0.1.0/24
 
