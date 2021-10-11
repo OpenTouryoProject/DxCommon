@@ -100,7 +100,7 @@ az vm create \
 Configure Auto-Shutdown
 
 ```Bash
-az vm auto-shutdown --resource-group $vmName -name windows10 --time 1500
+az vm auto-shutdown --resource-group $azureBastionRgName -name $vmName --time 1500
 ```
 ※ UTC 1500 is JST 0000.
 
@@ -139,7 +139,7 @@ az vm create \
 Configure Auto-Shutdown
 
 ```Bash
-az vm auto-shutdown --resource-group $vmName -name windows10 --time 1500
+az vm auto-shutdown --resource-group $yourRgName -name $vmName --time 1500
 ```
 ※ UTC 1500 is JST 0000.
 
