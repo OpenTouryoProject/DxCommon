@@ -108,8 +108,8 @@ az vm create \
 ### VNET Peering
 
 ```Bash
-vNetPeering1Id=AzureBastionVnet-YourVnet
-vNetPeering2Id=YourVnet-AzureBastionVnet
+vNetPeering1Name=AzureBastionVnet-YourVnet
+vNetPeering2Name=YourVnet-AzureBastionVnet
 
 vNet1Id=$(az network vnet show \
   --resource-group $azureBastionRgName \
@@ -123,14 +123,14 @@ vNet2Id=$(az network vnet show \
   --out tsv)
 
 az network vnet peering create \
-  --name $vNetPeering1Id \
+  --name $vNetPeering1Name \
   --resource-group $azureBastionRgName \
   --vnet-name $azureBastionVnetName \
   --remote-vnet $vNet2Id \
   --allow-vnet-access
 
 az network vnet peering create \
-  --name $vNetPeering2Id \
+  --name $vNetPeering2Name \
   --resource-group $yourRgName \
   --vnet-name $yourVnetName \
   --remote-vnet $vNet1Id \
@@ -141,19 +141,16 @@ az network vnet peering create \
 
 #### VNET Peering state
 ```Bash
-vNetPeering1Id=AzureBastionVnet-YourVnet
-vNetPeering2Id=YourVnet-AzureBastionVnet
-
 az network vnet peering show \
-  --name AzureBastionVnet-YourVnet \
-  --resource-group AzureBastionRG \
-  --vnet-name AzureBastionVnet \
+  --name $vNetPeering1Name \
+  --resource-group $azureBastionRgName \
+  --vnet-name $azureBastionVnetName \
   --query peeringState
 
 az network vnet peering show \
-  --name YourVnet-AzureBastionVnet \
-  --resource-group YourRG \
-  --vnet-name YourVnet \
+  --name $vNetPeering2Name \
+  --resource-group $yourRgName \
+  --vnet-name $yourVnetName \
   --query peeringState
 ```
 
