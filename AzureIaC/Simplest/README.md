@@ -97,6 +97,13 @@ az vm create \
 
 ```
 
+Configure Auto-Shutdown
+
+```Bash
+az vm auto-shutdown --resource-group $vmName -name windows10 --time 1500
+```
+※ UTC 1500 is JST 0000.
+
 ### Creating a Sandbox
 ```Bash
 vmName=YourVM1
@@ -128,6 +135,13 @@ az vm create \
 --public-ip-address ""
 
 ```
+
+Configure Auto-Shutdown
+
+```Bash
+az vm auto-shutdown --resource-group $vmName -name windows10 --time 1500
+```
+※ UTC 1500 is JST 0000.
 
 ### VNET Peering
 
@@ -163,6 +177,9 @@ az network vnet peering create \
   --remote-vnet $vNet1Id \
   --allow-vnet-access
 ```
+
+####
+
 
 ### Check
 
