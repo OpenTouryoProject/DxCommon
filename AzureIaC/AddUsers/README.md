@@ -121,6 +121,7 @@ New-AzRoleAssignment `
 ```
 
 ### Check
+The invited user executes the following command.
 
 #### Exec the Cloud Shell
 
