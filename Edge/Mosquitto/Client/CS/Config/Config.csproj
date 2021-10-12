@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>MqttConfig</RootNamespace>
+    <AssemblyName>MqttConfig</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MQTTnet" Version="3.0.16" />
+    <PackageReference Include="Touryo.Infrastructure.Public" Version="2.7.0" />
+  </ItemGroup>
+
+</Project>
