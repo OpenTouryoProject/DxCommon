@@ -5,21 +5,21 @@
 #### Define
 Windows
 ```Bash
-vmSize=Standard_F4
+vmSize=Standard_D4s_v3
 vmOS=Win2019Datacenter
 
 ```
 
 Ubuntu
 ```Bash
-vmSize=Standard_F2
+vmSize=Standard_E2s_v3
 vmOS=UbuntuLTS
 
 ```
 
 ResourcesGroup & Network, etc.
 ```Bash
-location=japanwest
+location=japaneast
 azureBastionName=AzureBastion
 azureBastionRgName=AzureBastionRG
 azureBastionVnetName=AzureBastionVnet
@@ -71,17 +71,22 @@ az network bastion create \
 ```
 
 ### Creating an Jumpbox Vm
-```Bash
 
-vmName=JumpboxVM1
-vmUser=[users名]
-vmPassword=[password]
+#### Network
+```Bash
 
 az network vnet subnet create \
   --resource-group $azureBastionRgName \
   --vnet-name $azureBastionVnetName \
   --name $jumpboxSubnetName \
   --address-prefixes 10.0.1.0/24
+```
+
+#### Virtual Machine
+```Bash
+vmName=JumpboxVM1
+vmUser=[users名]
+vmPassword=[password]
 
 az vm create \
 --resource-group $azureBastionRgName \
@@ -97,7 +102,13 @@ az vm create \
 
 ```
 
-Configure Auto-Shutdown
+##### List of public IP addresses
+
+```Bash
+az network public-ip list --output table
+```
+
+##### Configure Auto-Shutdown
 
 ```Bash
 az vm auto-shutdown --resource-group $azureBastionRgName --name $vmName --time 1500
@@ -106,14 +117,15 @@ az vm auto-shutdown --resource-group $azureBastionRgName --name $vmName --time 1
 
 ### Creating a Sandbox
 ```Bash
-vmName=YourVM1
-vmUser=[users名]
-vmPassword=[password]
-
 az group create \
   --name $yourRgName \
   --location $location
+  
+```
 
+#### Network
+
+```Bash
 az network vnet create \
   --resource-group $yourRgName \
   --name $yourVnetName \
@@ -121,6 +133,16 @@ az network vnet create \
   --subnet-name $yourSubnetName \
   --subnet-prefix 10.1.0.0/24 \
   --location $location
+  
+```
+
+#### Virtual Machine
+
+##### Create
+```Bash
+vmName=YourVM1
+vmUser=[users名]
+vmPassword=[password]
 
 az vm create \
 --resource-group $yourRgName \
@@ -136,7 +158,13 @@ az vm create \
 
 ```
 
-Configure Auto-Shutdown
+##### List of public IP addresses
+
+```Bash
+az network public-ip list --output table
+```
+
+##### Configure Auto-Shutdown
 
 ```Bash
 az vm auto-shutdown --resource-group $yourRgName --name $vmName --time 1500
@@ -145,6 +173,7 @@ az vm auto-shutdown --resource-group $yourRgName --name $vmName --time 1500
 
 ### VNET Peering
 
+#### Create
 ```Bash
 vNetPeering1Name=AzureBastionVnet-YourVnet
 vNetPeering2Name=YourVnet-AzureBastionVnet
@@ -176,14 +205,11 @@ az network vnet peering create \
   --vnet-name $yourVnetName \
   --remote-vnet $vNet1Id \
   --allow-vnet-access
+
 ```
 
-####
+#### Check
 
-
-### Check
-
-#### VNET Peering state
 ```Bash
 az network vnet peering show \
   --name $vNetPeering1Name \
@@ -196,9 +222,5 @@ az network vnet peering show \
   --resource-group $yourRgName \
   --vnet-name $yourVnetName \
   --query peeringState
-```
 
-#### List of public IP addresses
-```Bash
-az network public-ip list --output table
 ```
