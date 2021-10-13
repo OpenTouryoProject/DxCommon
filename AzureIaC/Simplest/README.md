@@ -127,6 +127,8 @@ az network vnet create \
 ```
 
 #### Virtual Machine
+
+##### Create
 ```Bash
 az vm create \
 --resource-group $yourRgName \
@@ -142,7 +144,13 @@ az vm create \
 
 ```
 
-Configure Auto-Shutdown
+##### List of public IP addresses
+
+```Bash
+az network public-ip list --output table
+```
+
+##### Configure Auto-Shutdown
 
 ```Bash
 az vm auto-shutdown --resource-group $yourRgName --name $vmName --time 1500
@@ -151,7 +159,7 @@ az vm auto-shutdown --resource-group $yourRgName --name $vmName --time 1500
 
 ### VNET Peering
 
-#### Create peering
+#### Create
 ```Bash
 vNetPeering1Name=AzureBastionVnet-YourVnet
 vNetPeering2Name=YourVnet-AzureBastionVnet
@@ -183,11 +191,11 @@ az network vnet peering create \
   --vnet-name $yourVnetName \
   --remote-vnet $vNet1Id \
   --allow-vnet-access
+
 ```
 
 #### Check
 
-##### VNET Peering state
 ```Bash
 az network vnet peering show \
   --name $vNetPeering1Name \
@@ -200,9 +208,5 @@ az network vnet peering show \
   --resource-group $yourRgName \
   --vnet-name $yourVnetName \
   --query peeringState
-```
 
-##### List of public IP addresses
-```Bash
-az network public-ip list --output table
 ```
