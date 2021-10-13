@@ -72,11 +72,15 @@ namespace MqttConfig
         }
 
         /// <summary>GetConfigValue</summary>
-        /// <param name="brokerList">string</param>
+        /// <param name="mqttBrokerHostName">string</param>
+        /// <param name="mqttBrokerPortNum">int</param>
         /// <param name="topic">string</param>
-        /// <param name="connectionString">string</param>
-        /// <param name="cacertLocation">string</param>
-        /// <param name="consumerGroup">string</param>
+        /// <param name="caCertPath">string</param>
+        /// <param name="clientCertPath">string</param>
+        /// <param name="clientCertPassword">string</param>
+        /// <param name="userName">string</param>
+        /// <param name="userPassword">string</param>
+        /// <param name="clientId">string</param>
         private static void GetConfigValues(
             out string mqttBrokerHostName, out int mqttBrokerPortNum, out string topic,
             out string caCertPath, out string clientCertPath, out string clientCertPassword,

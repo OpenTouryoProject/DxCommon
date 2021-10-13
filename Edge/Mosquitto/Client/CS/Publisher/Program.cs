@@ -28,7 +28,7 @@ namespace MqttPublisher
             await mqttClient.ConnectAsync(mqttClientOptions);
 
             Console.WriteLine("Sending messages to topic: " + topic + ", broker(s): " + broker);
-            Console.WriteLine("To stop a process running as producer, press [CTRL]-[C].");
+            Console.WriteLine("To stop a process running as publisher, press [CTRL]-[C].");
 
             int x = 0;
             while (Program.loop)

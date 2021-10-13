@@ -37,7 +37,10 @@ namespace MqttSubscriber
 
             // 接続
             await mqttClient.ConnectAsync(mqttClientOptions);
-
+            
+            Console.WriteLine("Receiving messages to topic: " + topic + ", broker(s): " + broker);
+            Console.WriteLine("To stop a process running as subscriber, press [CTRL]-[C].");
+            
             // 待機
             Console.ReadLine();
         }
