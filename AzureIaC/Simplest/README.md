@@ -71,17 +71,22 @@ az network bastion create \
 ```
 
 ### Creating an Jumpbox Vm
-```Bash
 
-vmName=JumpboxVM1
-vmUser=[users名]
-vmPassword=[password]
+#### Network
+```Bash
 
 az network vnet subnet create \
   --resource-group $azureBastionRgName \
   --vnet-name $azureBastionVnetName \
   --name $jumpboxSubnetName \
   --address-prefixes 10.0.1.0/24
+```
+
+#### Virtual Machine
+```Bash
+vmName=JumpboxVM1
+vmUser=[users名]
+vmPassword=[password]
 
 az vm create \
 --resource-group $azureBastionRgName \
