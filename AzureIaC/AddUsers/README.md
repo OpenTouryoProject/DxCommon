@@ -136,9 +136,9 @@ Access the created VM via Bastion.
 vmName=YourVM2
 vmUser=[users名]
 vmPassword=[password]
-vmSize=Standard_F4
+vmSize=Standard_E2s_v3
 vmOS=Win2019Datacenter
-location=japanwest
+location=japaneast
 yourRgName=YourRG
 yourVnetName=YourVnet
 yourSubnetName=YourSubnet
