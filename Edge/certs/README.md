@@ -2,9 +2,9 @@
 Use the following BAT to generate the broker's certificate.
 
 Points to consider when entering data.
-- When the CN (Common Name) of the certifications are the same, an error occurs when connecting.
 - Entering the 'extra' attributes is not required.
 - The password that was input pfx file generation is used from within the program.
+- When the CN (Common Name) of the certifications are the same, an error occurs when connecting.
 
 ### 1_ca.bat
 ```
