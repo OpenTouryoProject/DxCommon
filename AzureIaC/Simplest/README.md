@@ -5,21 +5,21 @@
 #### Define
 Windows
 ```Bash
-vmSize=Standard_D2s_v3
+vmSize=Standard_E2s_v3
 vmOS=Win2019Datacenter
 
 ```
 
 Ubuntu
 ```Bash
-vmSize=Standard_F2
+vmSize=Standard_E2s_v3
 vmOS=UbuntuLTS
 
 ```
 
 ResourcesGroup & Network, etc.
 ```Bash
-location=japanwest
+location=japaneast
 azureBastionName=AzureBastion
 azureBastionRgName=AzureBastionRG
 azureBastionVnetName=AzureBastionVnet
