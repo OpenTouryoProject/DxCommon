@@ -97,7 +97,13 @@ az vm create \
 
 ```
 
-Configure Auto-Shutdown
+##### List of public IP addresses
+
+```Bash
+az network public-ip list --output table
+```
+
+##### Configure Auto-Shutdown
 
 ```Bash
 az vm auto-shutdown --resource-group $azureBastionRgName --name $vmName --time 1500
