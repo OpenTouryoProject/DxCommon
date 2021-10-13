@@ -57,6 +57,13 @@ namespace AmqpConfig
         }
 
         /// <summary>GetConfigValue</summary>
+        /// <param name="amqpBrokerHostName">string</param>
+        /// <param name="topic">string</param>
+        /// <param name="caCertPath">string</param>
+        /// <param name="clientCertPath">string</param>
+        /// <param name="clientCertPassword">string</param>
+        /// <param name="userName">string</param>
+        /// <param name="userPassword">string</param>
         private static void GetConfigValues(
             out string amqpBrokerHostName, out string topic,
             out string caCertPath, out string clientCertPath, out string clientCertPassword,
