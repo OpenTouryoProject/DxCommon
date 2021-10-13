@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>AmqpConfig</RootNamespace>
+    <AssemblyName>AmqpConfig</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
+    <PackageReference Include="Touryo.Infrastructure.Public" Version="2.7.0" />
+  </ItemGroup>
+
+</Project>
