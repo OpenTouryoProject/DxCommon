@@ -5,7 +5,7 @@
 #### Define
 Windows
 ```Bash
-vmSize=Standard_F4
+vmSize=Standard_D2s_v3
 vmOS=Win2019Datacenter
 
 ```
