@@ -105,6 +105,8 @@ az vm auto-shutdown --resource-group $azureBastionRgName --name $vmName --time 1
 ※ UTC 1500 is JST 0000.
 
 ### Creating a Sandbox
+
+#### Network
 ```Bash
 vmName=YourVM1
 vmUser=[users名]
@@ -121,7 +123,11 @@ az network vnet create \
   --subnet-name $yourSubnetName \
   --subnet-prefix 10.1.0.0/24 \
   --location $location
+  
+```
 
+#### Virtual Machine
+```Bash
 az vm create \
 --resource-group $yourRgName \
 --name $vmName \
@@ -145,6 +151,7 @@ az vm auto-shutdown --resource-group $yourRgName --name $vmName --time 1500
 
 ### VNET Peering
 
+#### Create peering
 ```Bash
 vNetPeering1Name=AzureBastionVnet-YourVnet
 vNetPeering2Name=YourVnet-AzureBastionVnet
@@ -178,12 +185,9 @@ az network vnet peering create \
   --allow-vnet-access
 ```
 
-####
+#### Check
 
-
-### Check
-
-#### VNET Peering state
+##### VNET Peering state
 ```Bash
 az network vnet peering show \
   --name $vNetPeering1Name \
@@ -198,7 +202,7 @@ az network vnet peering show \
   --query peeringState
 ```
 
-#### List of public IP addresses
+##### List of public IP addresses
 ```Bash
 az network public-ip list --output table
 ```
