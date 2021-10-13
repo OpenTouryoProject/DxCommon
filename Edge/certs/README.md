@@ -1,13 +1,16 @@
 # certs
 Use the following BAT to generate the broker's certificate.
 
-### 1_ca.bat
 Points to consider when entering data.
+- When the CN (Common Name) of the certifications are the same, an error occurs when connecting.
+- Entering the 'extra' attributes is not required.
+- The password that was input pfx file generation is used from within the program.
 
+### 1_ca.bat
 ```
 writing new private key to 'ca.key'
-Enter PEM pass phrase:
-Verifying - Enter PEM pass phrase:
+Enter PEM pass phrase:xxxxx
+Verifying - Enter PEM pass phrase:xxxxx
 -----
 You are about to be asked to enter information that will be incorporated
 into your certificate request.
@@ -26,8 +29,6 @@ Email Address []:
 ```
 
 ### 2_server.bat
-Points to consider when entering data.
-
 ```
 You are about to be asked to enter information that will be incorporated
 into your certificate request.
@@ -50,10 +51,14 @@ A challenge password []:
 An optional company name []:
 ```
 
-### 3_client.bat
-Points to consider when entering data.
+```
+Signature ok
+subject=C = JP, ST = Some-State, O = Internet Widgits Pty Ltd, CN = localhost
+Getting CA Private Key
+Enter pass phrase for ca.key:
+```
 
-- When the CN of the certification authority and the server are the same, an error occurs when connecting.
+### 3_client.bat
 
 ```
 You are about to be asked to enter information that will be incorporated
@@ -78,6 +83,13 @@ An optional company name []:
 ```
 
 ```
-Enter Export Password:
-Verifying - Enter Export Password:
+Signature ok
+subject=C = AU, ST = Some-State, O = Internet Widgits Pty Ltd, CN = hogecli
+Getting CA Private Key
+Enter pass phrase for ca.key:
+```
+
+```
+Enter Export Password:xxxxx
+Verifying - Enter Export Password:xxxxx
 ```
