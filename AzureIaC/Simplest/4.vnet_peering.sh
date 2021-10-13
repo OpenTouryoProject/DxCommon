@@ -1,3 +1,8 @@
+azureBastionRgName=AzureBastionRG
+azureBastionVnetName=AzureBastionVnet
+yourRgName=YourRG
+yourVnetName=YourVnet
+
 vNetPeering1Name=AzureBastionVnet-YourVnet
 vNetPeering2Name=YourVnet-AzureBastionVnet
 
