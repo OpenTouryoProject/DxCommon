@@ -111,17 +111,16 @@ az vm auto-shutdown --resource-group $azureBastionRgName --name $vmName --time 1
 ※ UTC 1500 is JST 0000.
 
 ### Creating a Sandbox
-
-#### Network
 ```Bash
-vmName=YourVM1
-vmUser=[users名]
-vmPassword=[password]
-
 az group create \
   --name $yourRgName \
   --location $location
+  
+```
 
+#### Network
+
+```Bash
 az network vnet create \
   --resource-group $yourRgName \
   --name $yourVnetName \
@@ -136,6 +135,10 @@ az network vnet create \
 
 ##### Create
 ```Bash
+vmName=YourVM1
+vmUser=[users名]
+vmPassword=[password]
+
 az vm create \
 --resource-group $yourRgName \
 --name $vmName \
