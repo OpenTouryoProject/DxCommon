@@ -9,7 +9,9 @@ $subscriptionID = (Get-AzContext).Subscription.Id
 ```
 
 #### Check
-...
+```PowerShell
+echo $subscriptionID
+```
 
 ### Creating a custom role
 
