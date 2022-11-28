@@ -1,0 +1,12 @@
+version: '3'
+services:
+  notebook:
+    image: tensorflow/tensorflow:latest-jupyter
+    ports:
+      - '8888:8888'
+    environment:
+      - GRANT_SUDO=yes
+      - TZ=Asia/Tokyo
+    volumes:
+      - ./work:/tf/work
+      - ./path:/tf/path
