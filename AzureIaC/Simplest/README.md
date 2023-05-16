@@ -10,14 +10,12 @@ Windows
 ```Bash
 vmSize=Standard_D4s_v3
 vmOS=Win2019Datacenter
-
 ```
 
 Ubuntu
 ```Bash
 vmSize=Standard_E2s_v3
 vmOS=UbuntuLTS
-
 ```
 
 ResourcesGroup & Network, etc.
@@ -33,7 +31,6 @@ azureBastionPubIPName=AzureBastionPubIP
 yourRgName=YourRG
 yourVnetName=YourVnet
 yourSubnetName=YourSubnet
-
 ```
 
 #### Check
@@ -70,7 +67,6 @@ az network bastion create \
   --vnet-name $azureBastionVnetName \
   --public-ip-address $azureBastionPubIPName \
   --location $location
-
 ```
 
 ### Creating an Jumpbox Vm
@@ -102,7 +98,6 @@ az vm create \
 --vnet-name $azureBastionVnetName \
 --subnet $jumpboxSubnetName \
 --public-ip-address ""
-
 ```
 
 ##### List of public IP addresses
@@ -122,8 +117,7 @@ az vm auto-shutdown --resource-group $azureBastionRgName --name $vmName --time 1
 ```Bash
 az group create \
   --name $yourRgName \
-  --location $location
-  
+  --location $location  
 ```
 
 #### Network
@@ -135,8 +129,7 @@ az network vnet create \
   --address-prefix 10.1.0.0/16 \
   --subnet-name $yourSubnetName \
   --subnet-prefix 10.1.0.0/24 \
-  --location $location
-  
+  --location $location  
 ```
 
 #### Virtual Machine
@@ -158,7 +151,6 @@ az vm create \
 --vnet-name $yourVnetName \
 --subnet $yourSubnetName \
 --public-ip-address ""
-
 ```
 
 ##### List of public IP addresses
@@ -208,7 +200,6 @@ az network vnet peering create \
   --vnet-name $yourVnetName \
   --remote-vnet $vNet1Id \
   --allow-vnet-access
-
 ```
 
 #### Check
@@ -225,5 +216,4 @@ az network vnet peering show \
   --resource-group $yourRgName \
   --vnet-name $yourVnetName \
   --query peeringState
-
 ```
