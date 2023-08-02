@@ -60,8 +60,6 @@ ssh -i /mnt/.../hoge ${vmUser}@$(az vm show \
 ```
 
 #### xrdp
-
-
 ```Bash
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get -y install xfce4
@@ -118,3 +116,7 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install ./google-chrome-stable_current_amd64.deb
 google-chrome
 ```
+
+### Reference
+- VM起動後の開発環境のセットアップ（Linux） - 開発基盤部会 Wiki
+https://dotnetdevelopmentinfrastructure.osscons.jp/index.php?VM%E8%B5%B7%E5%8B%95%E5%BE%8C%E3%81%AE%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83%E3%81%AE%E3%82%BB%E3%83%83%E3%83%88%E3%82%A2%E3%83%83%E3%83%97%EF%BC%88Linux%EF%BC%89
