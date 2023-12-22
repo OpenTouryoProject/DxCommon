@@ -1,7 +1,7 @@
 # coding: utf-8
-from common.np import *  # import numpy as np (or import cupy as np)
-from common.layers import *
-from common.functions import softmax, sigmoid
+from nekozame.common.np import *  # import numpy as np (or import cupy as np)
+from nekozame.common.layers import *
+from nekozame.common.functions import softmax, sigmoid
 
 
 class RNN:

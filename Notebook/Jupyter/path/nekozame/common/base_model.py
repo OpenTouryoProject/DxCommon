@@ -3,8 +3,8 @@ import sys
 sys.path.append('..')
 import os
 import pickle
-from common.np import *
-from common.util import to_gpu, to_cpu
+from nekozame.common.np import *
+from nekozame.common.util import to_gpu, to_cpu
 
 
 class BaseModel:

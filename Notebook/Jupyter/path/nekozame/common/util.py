@@ -2,7 +2,7 @@
 import sys
 sys.path.append('..')
 import os
-from common.np import *
+from nekozame.common.np import *
 
 
 def preprocess(text):

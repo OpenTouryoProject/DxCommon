@@ -1,5 +1,5 @@
 # coding: utf-8
-from common.config import GPU
+from nekozame.common.config import GPU
 
 
 if GPU:
