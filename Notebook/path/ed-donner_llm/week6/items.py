@@ -125,7 +125,4 @@ class Item:
         Return a String version of this Item
         このアイテムの文字列バージョンを返す
         """
-        return f"<{self.title} = ${self.price}>"    
-
-    
-    
+        return f"<{self.title} = ${self.price}>"
