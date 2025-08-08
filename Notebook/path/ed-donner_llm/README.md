@@ -10,13 +10,16 @@ https://github.com/WittmannF/
 
 微調整（≠ファインチューニング）を行ったものです。
 
+オリジナルのREADMEは、README_org.mdを見て下さい。
+
 動作確認していないものもあり、ソレについては、  
 _jaで内容を確認し、_jaではない方で実行して下さい。
 
 また、一部、Google Clabの実行結果を含むファイルは、
 （week3、7は全てClab、week6は一部、Clabで実行）
 GitHubのViewer上で「Invalid Notebook」になるようです。
-コレの内容については、自身のJupiter環境で確認して下さい。
+コレの内容については、自身のJupiter環境で確認するか、
+Clabの [ノートブックを開く] > [GitHub] からURLを指定して下さい。
 
 なお、community-contributions（extras、solutions）  
 などのフォルダは大き過ぎて対象にできませんでした。
