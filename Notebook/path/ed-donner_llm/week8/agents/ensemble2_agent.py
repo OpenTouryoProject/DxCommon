@@ -5,12 +5,13 @@ import joblib
 from agents.agent import Agent
 from agents.specialist_agent import SpecialistAgent
 from agents.frontier_agent import FrontierAgent
-from agents.random_forest_agent import RandomForestAgent
+#from agents.random_forest_agent import RandomForestAgent
+from agents.lightgbm_agent import LightGBMAgent
 
 # アンサンブル・モデルのエージェント
-class EnsembleAgent(Agent):
+class Ensemble2Agent(Agent):
 
-    name = "Ensemble Agent"
+    name = "Ensemble2 Agent"
     color = Agent.YELLOW
 
     # 初期化
@@ -26,8 +27,9 @@ class EnsembleAgent(Agent):
         # 各エージェントの初期化
         self.specialist = SpecialistAgent()
         self.frontier = FrontierAgent(collection)
-        self.random_forest = RandomForestAgent()
-
+        #self.random_forest = RandomForestAgent()
+        self.lightgbm_agent = LightGBMAgent()
+        
         # アンサンブル・モデルの初期化
         self.model = joblib.load('ensemble_model.pkl')
 
@@ -51,20 +53,22 @@ class EnsembleAgent(Agent):
         """
 
         # アンサンブル・エージェントの実行 - ３つのエージェントとの連携
-        self.log("Running Ensemble Agent - collaborating with specialist, frontier and random forest agents")
+        self.log("Running Ensemble Agent - collaborating with specialist, frontier and LightGBM agents")
 
         # 各エージェントで推論
         specialist = self.specialist.price(description)
         frontier = self.frontier.price(description)
-        random_forest = self.random_forest.price(description)
+        #random_forest = self.random_forest.price(description)
+        lightgbm = self.lightgbm_agent.price(description)
 
         # 各モデルの予測誤差の傾向を線形回帰が重み付けして最適に組み合わせる
         X = pd.DataFrame({
             'Specialist': [specialist],
             'Frontier': [frontier],
-            'RandomForest': [random_forest],
-            'Min': [min(specialist, frontier, random_forest)],
-            'Max': [max(specialist, frontier, random_forest)],
+            #'RandomForest': [random_forest],
+            'LightGBM': [lightgbm],
+            'Min': [min(specialist, frontier, lightgbm)], #random_forest)],
+            'Max': [max(specialist, frontier, lightgbm)], #random_forest)],
         })
         y = max(0, self.model.predict(X)[0])
 

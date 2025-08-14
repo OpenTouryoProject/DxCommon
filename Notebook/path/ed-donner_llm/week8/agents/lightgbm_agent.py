@@ -7,10 +7,10 @@ from sentence_transformers import SentenceTransformer
 import joblib
 from agents.agent import Agent
 
-# ランダム・フォレスト・モデルのエージェント
-class RandomForestAgent(Agent):
+# LightGBMモデルのエージェント
+class LightGBMAgent(Agent):
 
-    name = "Random Forest Agent"
+    name = "LightGBM Agent"
     color = Agent.MAGENTA
 
     # 初期化
@@ -20,34 +20,34 @@ class RandomForestAgent(Agent):
         保存したモデルの重みとSentenceTransformerベクトルエンコーディングモデルを読み込んでこのオブジェクトを初期化
         """
         
-        # ランダム・フォレスト・エージェントを初期化
-        self.log("Random Forest Agent is initializing")
+        # LightGBMエージェントを初期化
+        self.log("LightGBM Agent is initializing")
         
         self.vectorizer = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-        self.model = joblib.load('random_forest_model.pkl')
+        self.model = joblib.load('lightgbm_model.pkl')
         
-        # ランダム・フォレスト・エージェントの準備が完了
-        self.log("Random Forest Agent is ready")
+        # LightGBMエージェントの準備が完了
+        self.log("LightGBM Agent is ready")
 
     # 価格の推定
     def price(self, description: str) -> float:
         """
-        Use a Random Forest model to estimate the price of the described item
+        Use a LightGBM model to estimate the price of the described item
         :param description: the product to be estimated
         :return: the price as a float
 
-        ランダムフォレストモデルを使用して、説明されている商品の価格を推定
+        LightGBMモデルを使用して、説明されている商品の価格を推定
         :param description: 推定する商品
         :return: float で表した価格
         """
 
-        # ランダム・フォレスト・エージェントが予測を開始
-        self.log("Random Forest Agent is starting a prediction")
+        # LightGBMエージェントが予測を開始
+        self.log("LightGBM Agent is starting a prediction")
         
         vector = self.vectorizer.encode([description])
         result = max(0, self.model.predict(vector)[0])
         
-        # ランダム・フォレスト・エージェントが完了 - ${result:.2f}を予測
-        self.log(f"Random Forest Agent completed - predicting ${result:.2f}")
+        # LightGBMエージェントが完了 - ${result:.2f}を予測
+        self.log(f"RLightGBM Agent completed - predicting ${result:.2f}")
         
         return result

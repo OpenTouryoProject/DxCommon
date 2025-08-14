@@ -94,8 +94,3 @@ class Item:
         Return a String version of this Item
         """
         return f"<{self.title} = ${self.price}>"
-
-        
-
-    
-    
