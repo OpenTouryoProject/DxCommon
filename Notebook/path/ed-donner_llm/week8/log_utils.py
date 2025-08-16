@@ -25,7 +25,6 @@ mapper = {
     BG_BLUE+WHITE: "#ff7800"
 }
 
-
 def reformat(message):
     for key, value in mapper.items():
         message = message.replace(key, f'<span style="color: {value}">')
