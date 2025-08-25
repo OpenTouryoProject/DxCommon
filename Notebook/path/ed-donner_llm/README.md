@@ -1,6 +1,6 @@
 2025/7/22
 
-このフォルダは、以下のリポジトリを
+このフォルダは、以下のリポジトリの内容に
 
 https://github.com/ed-donner/llm_engineering/
 
