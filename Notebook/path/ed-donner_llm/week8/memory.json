@@ -16,5 +16,23 @@
     },
     "estimate": 930.8824204895075,
     "discount": 225.88242048950747
+  },
+  {
+    "deal": {
+      "product_description": "The Toshiba M550 Series 65M550NU is a 65\" 4K HDR LED UHD Smart Fire TV that delivers stunning picture quality with its 4K resolution and supports Dolby Vision HDR10, HDR10+, and HLG. It includes four HDMI ports for multiple device connections and has Amazon Alexa built-in for voice-controlled operation. Ideal for streaming and gaming, this TV provides an immersive viewing experience with vibrant colors and sharp details.",
+      "price": 380.0,
+      "url": "https://www.dealnews.com/products/Toshiba/Toshiba-M550-Series-65-M550-NU-65-4-K-HDR-LED-UHD-Smart-Fire-TV/492835.html?iref=rss-c142"
+    },
+    "estimate": 907.8056411384323,
+    "discount": 527.8056411384323
+  },
+  {
+    "deal": {
+      "product_description": "The Blink Outdoor 4 5-Camera System is designed for seamless home security, featuring five cameras and a Sync Module Core for easy setup and management. Each camera supports 1080p HD imaging, night vision, and two-way audio communication, allowing you to interact with visitors even when you're not home. With enhanced motion detection capabilities, this system helps ensure your safety at all times.",
+      "price": 120.0,
+      "url": "https://www.dealnews.com/products/Blink/Blink-Outdoor-4-5-Camera-System/491527.html?iref=rss-f1912"
+    },
+    "estimate": 360.4355549887938,
+    "discount": 240.4355549887938
   }
 ]
