@@ -10,7 +10,7 @@ https://github.com/WittmannF/
 
 微調整（≠ファインチューニング）を行ったものです。
 
-・使用する有償APIをOpneAIのみにした。
+・使用するAPIを有償のOpneAIと無償のGeminiにした。
 ・性能的に修正したりGoogleClabで実行したり。
 ・GoogleClabの*.ipynbファイルの実体を含めた。
 ・コードへコメントを付与し内部文書化した。
