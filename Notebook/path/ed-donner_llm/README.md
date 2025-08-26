@@ -10,6 +10,14 @@ https://github.com/WittmannF/
 
 微調整（≠ファインチューニング）を行ったものです。
 
+・使用する有償APIをOpneAIのみにした。
+・性能的に修正したりGoogleClabで実行したり。
+・GoogleClabの*.ipynbファイルの実体を含めた。
+・コードへコメントを付与し内部文書化した。
+・その他、実装がより良くなるように修正した。
+・EXERCISEについては、contributionsから
+  良さそうなものを抜き出して、_jaの内容に含めた。
+
 オリジナルのREADMEは、README_org.mdを見て下さい。
 
 動作確認していないものもあり、ソレについては、  
@@ -23,5 +31,3 @@ Clabの [ノートブックを開く] > [GitHub] からURLを指定して下さ�
 
 なお、community-contributions（extras、solutions）  
 などのフォルダは大き過ぎて対象にできませんでした。
-しかし、EXERCISEについては、contributionsから
-良さそうなものを抜き出して、_jaの内容に含めました。
