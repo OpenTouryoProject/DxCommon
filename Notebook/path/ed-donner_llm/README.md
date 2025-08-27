@@ -31,3 +31,8 @@ Clabの [ノートブックを開く] > [GitHub] からURLを指定して下さ�
 
 なお、community-contributions（extras、solutions）  
 などのフォルダは大き過ぎて対象にできませんでした。
+
+以下は解説コンテンツ
+
+LLM Engineering：Master AI、Large Language Models＆Agents - 開発基盤部会 Wiki
+https://dotnetdevelopmentinfrastructure.osscons.jp/index.php?LLM%20Engineering%EF%BC%9AMaster%20AI%E3%80%81Large%20Language%20Models%EF%BC%86Agents

@@ -25,3 +25,8 @@ _jaで内容を確認し、_jaではない方で実行して下さい。
 
 なお、community-contributions（extras、solutions）  
 などのフォルダは大き過ぎて対象にできませんでした。
+
+以下は解説コンテンツ
+
+The Complete Agentic AI Engineering Course (2025) - 開発基盤部会 Wiki
+https://dotnetdevelopmentinfrastructure.osscons.jp/index.php?The%20Complete%20Agentic%20AI%20Engineering%20Course%20%282025%29
