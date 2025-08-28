@@ -52,6 +52,7 @@ class ResearchManager:
 
     async def search(self, item: WebSearchItem) -> str | None:
         """ Perform a search for the query """
+        print(f"Searching {item.query}...") # 少々ログを強化した。
         input = f"Search term: {item.query}\nReason for searching: {item.reason}"
         try:
             result = await Runner.run(
