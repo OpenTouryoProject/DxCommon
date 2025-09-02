@@ -1,3 +1,6 @@
+※ このファイルは、`crewai create crew Debate`コマンドとともに生成されたものと思われる。
+※ my_crewとの差異は、テンプレート出力時点でのバージョン間の差異や手修正された部分などがあるものと思われる。
+
 # Debate Crew
 
 Debate Crewプロジェクトへようこそ。本プロジェクトは [crewAI](https://crewai.com) によって動作しています。
