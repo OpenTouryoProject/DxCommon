@@ -30,7 +30,6 @@ pip install uv
 
 ```bash
 crewai install
-
 ```
 
 ### カスタマイズ
