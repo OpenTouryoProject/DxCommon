@@ -31,5 +31,8 @@ https://github.com/WittmannF/
 The Complete Agentic AI Engineering Course (2025) - 開発基盤部会 Wiki
 https://dotnetdevelopmentinfrastructure.osscons.jp/index.php?The%20Complete%20Agentic%20AI%20Engineering%20Course%20%282025%29
 
-環境はVS Code → WSL2のUbuntu 24.04 LTS上のPython仮想環境、必要に応じてJupyter Lab。
-.envを使用するようにして、一部の環境ではuvを使用しました。
+環境には、Windows上の VS Code → WSL2(Ubuntu 24.04 LTS)上のPython仮想環境＋必要に応じてJupyter Lab。  
+`.env` を使用、一部（`3_crew`, ...）ではuv仮想環境を使用する必要がある。
+
+uvの仮想環境は、`ed-donner_agents` フォルダで `uv sync` コマンドを実行すると、当該フォルダに.venvフォルダが作成され、  
+当該フォルダ以下のフォルダで、`uv ～` コマンドを使用する場合、作成した仮想環境が自動検出され使用される設計になっている。

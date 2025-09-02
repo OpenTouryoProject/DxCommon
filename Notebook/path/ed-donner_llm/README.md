@@ -37,5 +37,5 @@ Clabの [ノートブックを開く] > [GitHub] からURLを指定して下さ�
 LLM Engineering：Master AI、Large Language Models＆Agents - 開発基盤部会 Wiki
 https://dotnetdevelopmentinfrastructure.osscons.jp/index.php?LLM%20Engineering%EF%BC%9AMaster%20AI%E3%80%81Large%20Language%20Models%EF%BC%86Agents
 
-環境はWSL2のUbuntu 24.04 LTS上のPython仮想環境上のJupyter Lab。
+環境には、WSL2のUbuntu 24.04 LTS上のPython仮想環境上のJupyter Labを使用。  
 .env、requirements.txtは使用せず、都度export、installで進めました。
