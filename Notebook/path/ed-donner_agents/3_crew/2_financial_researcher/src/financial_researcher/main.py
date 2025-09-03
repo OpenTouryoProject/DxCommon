@@ -13,7 +13,7 @@ def run():
     クルーを起動・実行する。
     """
     inputs = {
-        'company': 'Apple'
+        'company': 'Apple' # 'Tesla'
     }
 
     # Create and run the crew
