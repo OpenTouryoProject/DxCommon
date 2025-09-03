@@ -47,10 +47,12 @@ my_crew/
   `pytest` などでテストを書き、エージェントやツールが期待通り動作するか確認する。
 
 * **.env、.gitignore**
-  - `.env`環境変数ファイルは`.gitignore`除外ファイルで追加されないが、  
-  実行の際に必要になり中には一行 `MODEL=gpt-4o-mini` が定義されていた。
-  - また、`README.md` の内容から `OPENAI_API_KEY` を追加する必要がある。
-  - また、`crewai run`を実行すると、`uv.lock`ファイル、`.venv`フォルダが作成される。
+  - `.env`環境変数ファイルは`.gitignore`除外ファイルで追加されないが実行に必要
+    - 中には一行 `MODEL=gpt-4o-mini` が定義されていた。
+    - `README.md` の内容から `OPENAI_API_KEY` の追加が必要。
+  - `crewai run`を実行すると、`uv.lock`ファイル、`.venv`フォルダが作成される。
+    - `uv.lock`ファイルは環境再現性保証のロックファイル
+    - `.venv`フォルダは仮想環境で `uv` が自動的に作成・適用する。
 
 * **MDファイル**
 

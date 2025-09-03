@@ -6,6 +6,11 @@
 * **報告エージェント**がその要約を詳細なレポートに展開
 * **クルー全体の成果物**として包括的レポートが完成
 
++ Crew Execution Started
++ Task: research_task -> Executing Task -> Agent Started (AI LLMs Senior Data Researcher) -> Agent Final Answer -> Task Completion
++ Task: reporting_task -> Executing Task -> Agent Started (AI LLMs Reporting Analyst)  ->  Agent Final Answer -> Task Completion
++ Crew Completion
+
 ポイントごとに説明します。
 
 ### 1. Crew Execution Started
@@ -24,7 +29,6 @@
 │                                                                                                          │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
-
 
 ### 2. Task: research_task
 

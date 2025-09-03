@@ -1,0 +1,16 @@
+research_task:
+  description: >
+    {topic} について徹底的に調査してください。
+    現在の年が {current_year} であることを考慮して、興味深く関連性のある情報を見つけてください。
+  expected_output: >
+    {topic} に関する最も関連性の高い情報を 10 個の箇条書きでまとめたリスト
+  agent: researcher
+
+reporting_task:
+  description: >
+    得られたコンテキストを確認し、各トピックをレポートの完全なセクションに拡張します。
+    レポートが詳細で、関連するすべての情報が含まれていることを確認してください。
+  expected_output: >
+    主要なトピックを網羅し、それぞれに詳細な情報セクションを備えた本格的なレポートです。
+    '```' を除いたマークダウン形式でフォーマットされています。
+  agent: reporting_analyst
