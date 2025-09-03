@@ -1,3 +1,5 @@
+$ crewai run
+Running the Crew
 ╭───────────────────────────────────────── Crew Execution Started ─────────────────────────────────────────╮
 │                                                                                                          │
 │  Crew Execution Started                                                                                  │

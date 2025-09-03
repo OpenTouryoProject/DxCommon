@@ -1,0 +1,23 @@
+propose:
+  description: >
+    あなたは動議「{motion}」を提案しています。動議を支持する明確な論拠を提示してください。説得力のある論拠を提示してください。
+  expected_output: >
+    動議を支持するあなたの明確な論拠を簡潔に述べてください。
+  agent: debater
+  output_file: output/propose.md
+
+oppose:
+  description: >
+    あなたは動議{motion}に反対です。動議に反対する明確な論拠を示してください。説得力のある論拠を示してください。
+  expected_output: >
+    動議に反対するあなたの明確な主張を簡潔に述べてください。
+  agent: debater
+  output_file: output/oppose.md
+
+decide:
+  description: >
+    討論者が提示した議論を検討し、どちらの側がより説得力があるかを判断します。
+  expected_output: >
+    どちらの側がより説得力があるか、またその理由は何かというあなたの判断。
+  agent: judge
+  output_file: output/decide.md
