@@ -11,8 +11,7 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 # Create output directory if it doesn't exist
 os.makedirs('output', exist_ok=True)
 
-assignment = 'Write a python program to calculate the first 10,000 terms \
-    of this series, multiplying the total by 4: 1 - 1/3 + 1/5 - 1/7 + ...'
+assignment = '1 - 1/3 + 1/5 - 1/7 + ... の級数の最初の 10,000 項を計算し、合計を 4 倍する Python プログラムを作成してください。'
 
 def run():
     """

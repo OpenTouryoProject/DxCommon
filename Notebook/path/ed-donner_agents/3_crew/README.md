@@ -49,7 +49,7 @@ Day0の内容を日本語化＋コメント追加した。
 - 各種エージェントが、構造化出力を使用
 - プッシュ通知の送信カスタム・ツールを使用
 - ヒエラルキー実行モードでコンテキストを使用して情報を受け渡す。
-- 短期・長期・エンティティメモリを使用するよう設定。
+- 短期 / 長期 / エンティティ・メモリを使用するよう設定。
 
 # Day4：4_coder
 講師が`crewai create crew coder`コマンドを実行して作成したプロジェクトで、
@@ -58,6 +58,58 @@ Day0の内容を日本語化＋コメント追加した。
 
 内容は日本語化＋コメント追加してある。
 
-機能的な追加は...
+コーディングしたコードを安全に実行するためにDockerを使用する。
 
-# Day5：debate
+以下は、WSL2内のUbuntu 24.04 LTSにDockerをインストールした手順  
+（コード内にDocker Desktopとあるが、Docker Desktopである必要はない）
+
+1. **古いバージョンの削除（任意）**
+   ```bash
+   sudo apt-get remove docker docker-engine docker.io containerd runc
+   ```
+
+2. **必要なパッケージをインストール**
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y ca-certificates curl gnupg lsb-release
+   ```
+
+3. **Docker の公式 GPG キーを追加**
+   ```bash
+   sudo mkdir -p /etc/apt/keyrings
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+   ```
+
+4. **APT リポジトリを追加**
+   ```bash
+   echo \
+     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+     $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   ```
+
+5. **Docker Engine をインストール**
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+   ```
+
+6. **インストール確認**
+   ```bash
+   sudo docker run hello-world
+   ```
+   → "Hello from Docker!" が出れば成功です。
+
+7. **（オプション）sudo なしで Docker を使えるようにする**
+   ```bash
+   sudo usermod -aG docker $USER
+   newgrp docker
+   docker run hello-world
+   ```
+
+# Day5：engineering_team
+講師が`crewai create crew engineering_team`コマンドを実行して作成したプロジェクトで、
+
+「xxxxxx」機能に書き直されている。
+
+内容は日本語化＋コメント追加してある。
+
