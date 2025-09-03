@@ -1,29 +1,44 @@
 find_trending_companies:
+
   description: >
-    Find the top trending companies in the news in {sector} by searching the latest news. Find new companies that you've not found before.
+    最新ニュースを検索して、{sector}で話題の企業を見つけましょう。これまで見つけられなかった新しい企業を見つけましょう。
+
+  # 英語での出力を防止する為に「を日本語で」を追加
   expected_output: >
-    A list of trending companies in {sector}
+    {sector}のトレンド企業リストを日本語で出力
+
   agent: trending_company_finder
   output_file: output/trending_companies.json
 
 research_trending_companies:
+
   description: >
-    Given a list of trending companies, provide detailed analysis of each company in a report by searching online
+    トレンド企業のリストを受け取り、オンラインで調査することによって各企業の詳細な分析をレポートとして提供します。
+
+  # 英語での出力を防止する為に「を日本語で」を追加
   expected_output: >
-    A report containing detailed analysis of each company
-  agent: financial_researcher
-  context:
+    各企業の詳細な分析を含む日本語のレポートを日本語で出力
+
+  context: # コンテキストに find_trending_companies のトレンド企業リスト
     - find_trending_companies
+
+  agent: financial_researcher
   output_file: output/research_report.json
 
 pick_best_company:
+
   description: >
-    Analyze the research findings and pick the best company for investment.
-    Send a push notification to the user with the decision and 1 sentence rationale.
-    Then respond with a detailed report on why you chose this company, and which companies were not selected.
+    調査結果を分析し、投資に最適な企業を選定します。
+    その決定と1文の理由を記載したプッシュ通知をユーザーに送信します。
+    その後、その企業を選んだ理由と、選ばなかった企業について詳細なレポートを返信します。
+
+  # 英語での出力を防止する為に「を日本語で」を追加
   expected_output: >
-    The chosen company and why it was chosen; the companies that were not selected and why they were not selected.
-  agent: stock_picker
-  context:
+    選ばれた企業と選ばれた理由、選ばれなかった企業と選ばれなかった理由を日本語で出力
+
+  context: # コンテキストに research_trending_companies の各企業の詳細分析レポート
     - research_trending_companies
+
+  agent: stock_picker
   output_file: output/decision.md
+  

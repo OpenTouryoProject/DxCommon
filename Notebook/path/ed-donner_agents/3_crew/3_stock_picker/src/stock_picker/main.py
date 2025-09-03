@@ -8,10 +8,10 @@ from stock_picker.crew import StockPicker
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
-
+# runのみ
 def run():
     """
-    Run the research crew.
+    クルーを起動・実行する。
     """
     inputs = {
         'sector': 'Technology',
@@ -24,7 +24,6 @@ def run():
     # Print the result
     print("\n\n=== FINAL DECISION ===\n\n")
     print(result.raw)
-
 
 if __name__ == "__main__":
     run()
