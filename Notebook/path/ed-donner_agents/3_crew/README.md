@@ -15,8 +15,7 @@
 
 Day0の内容を日本語化＋コメント追加した。
 
-「リサーチ＆レポート」機能面の確認を行う目的。
-（入力インストラクションと出力レポート）
+主に、機能面（インストラクションとレポート）の確認を行う目的。
 
 # Day1：1_debate
 講師が`crewai create crew debatew`コマンドを実行
@@ -30,9 +29,23 @@ Day0の内容を日本語化＋コメント追加した。
 `.env` は、本コースの前半で、`path` フォルダ直下に配置したモノを使うので不要。  
 （利用LLMは `agents.yaml` に直下書き、APIキーは、OPENAI_API_KEY, GOOGLE_API_KEY を使用）
 
-# Day2：debate
+# Day2：2_financial_researcher
+講師が`crewai create crew financial_researcher`コマンドを実行
 
-# Day3：debate
+して作成したプロジェクトで、
+
+「金融調査員」機能に書き直されている。
+
+内容は日本語化＋コメント追加してある。
+
+# Day3：3_stock_picker
+講師が`crewai create crew stock_picker`コマンドを実行
+
+して作成したプロジェクトで、
+
+「銘柄選択投資」機能に書き直されている。
+
+内容は日本語化＋コメント追加してある。
 
 # Day4：debate
 

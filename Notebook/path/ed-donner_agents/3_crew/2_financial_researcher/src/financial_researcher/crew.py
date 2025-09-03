@@ -5,7 +5,9 @@ from crewai_tools import SerperDevTool
 
 @CrewBase
 class ResearchCrew():
-    """Research crew for comprehensive topic analysis and reporting"""
+    """包括的なトピック分析とレポートのための調査チーム"""
+    
+    # ２つのエージェントと２つのタスクを定義
 
     @agent
     def researcher(self) -> Agent:
@@ -41,6 +43,6 @@ class ResearchCrew():
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
-            process=Process.sequential,
+            process=Process.sequential, # 順次実行
             verbose=True,
         )

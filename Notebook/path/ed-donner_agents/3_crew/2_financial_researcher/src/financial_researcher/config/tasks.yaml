@@ -1,34 +1,37 @@
 # src/research_crew/config/tasks.yaml
 research_task:
-  description: >
-    Conduct thorough research on company {company}. Focus on:
-    1. Current company status and health
-    2. Historical company performance
-    3. Major challenges and opportunities
-    4. Recent news and events
-    5. Future outlook and potential developments
 
-    Make sure to organize your findings in a structured format with clear sections.
+  description: >
+    {company}社について徹底的な調査を実施してください。以下の点に着目してください。
+    1. 現在の会社の状況と健全性
+    2. これまでの会社の業績
+    3. 主要な課題と機会
+    4. 最近のニュースと出来事
+    5. 将来の見通しと潜在的な発展
+    調査結果を、明確なセクションを持つ構造化された形式で整理するようにしてください。
+    
   expected_output: >
-    A comprehensive research document with well-organized sections covering
-    all the requested aspects of {company}. Include specific facts, figures,
-    and examples where relevant.
+    {company} に関するあらゆる側面を網羅した、整理されたセクション構成の包括的な調査資料。関連する具体的な事実、数値、事例を記載してください。
+
   agent: researcher
 
 analysis_task:
+
   description: >
-    Analyze the research findings and create a comprehensive report on {company}.
-    Your report should:
-    1. Begin with an executive summary
-    2. Include all key information from the research
-    3. Provide insightful analysis of trends and patterns
-    4. Offer a market outlook for company, noting that this should not be used for trading decisions
-    5. Be formatted in a professional, easy-to-read style with clear headings
+    調査結果を分析し、{company}に関する包括的なレポートを作成してください。レポートは以下の点に留意してください。
+    1. エグゼクティブサマリーから始める
+    2. 調査で得られたすべての主要情報を含める
+    3. トレンドとパターンに関する洞察に満ちた分析を提供する
+    4. 企業の市場見通しを提示する（ただし、この見通しは取引の意思決定には使用すべきではないことに留意する）
+    5. 明確な見出しを付け、読みやすいプロフェッショナルなスタイルで作成する
+
   expected_output: >
-    A polished, professional report on {company} that presents the research
-    findings with added analysis and insights. The report should be well-structured
-    with an executive summary, main sections, and conclusion.
+    {company} に関する洗練されたプロフェッショナルなレポートであり、調査結果に分析と洞察を加えて提示します。
+    レポートは、エグゼクティブサマリー、主要セクション、および結論を含む、よく構成されたものである必要があります。
+
   agent: analyst
+
   context:
     - research_task
+
   output_file: output/report.md

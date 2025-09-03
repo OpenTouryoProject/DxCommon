@@ -6,9 +6,11 @@ from financial_researcher.crew import ResearchCrew
 # Create output directory if it doesn't exist
 os.makedirs('output', exist_ok=True)
 
+# runのみ
+
 def run():
     """
-    Run the research crew.
+    クルーを起動・実行する。
     """
     inputs = {
         'company': 'Apple'
