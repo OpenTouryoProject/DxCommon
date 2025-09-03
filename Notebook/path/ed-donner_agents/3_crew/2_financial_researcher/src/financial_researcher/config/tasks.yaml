@@ -31,7 +31,7 @@ analysis_task:
 
   agent: analyst
 
-  context: # analysis_task で research_taskの調査結果を参照できるようにする
-    - research_task
+  # context: # analysis_task で research_task の調査結果を参照できるようにする
+  #   - research_task
 
   output_file: output/report.md
