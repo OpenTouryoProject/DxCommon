@@ -8,9 +8,29 @@ def create_account(initial_deposit):
     global account
     try:
         account = Account(initial_deposit)
-        return f"アカウントを作成しました。初期入金額: ￥{initial_deposit:,}", gr.update(interactive=True), gr.update(interactive=True), gr.update(interactive=True), gr.update(interactive=True)
+        return (
+            f"アカウントを作成しました。初期入金額: ￥{initial_deposit:,}",
+            gr.update(interactive=True),  # deposit_amt
+            gr.update(interactive=True),  # withdraw_amt
+            gr.update(interactive=True),  # buy_symbol
+            gr.update(interactive=True),  # buy_qty
+            gr.update(interactive=True),  # deposit_btn
+            gr.update(interactive=True),  # withdraw_btn
+            gr.update(interactive=True),  # buy_btn
+            gr.update(interactive=True),  # sell_btn
+        )
     except Exception as e:
-        return f"エラー: {str(e)}", gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)
+        return (
+            f"エラー: {str(e)}",
+            gr.update(interactive=False),  # deposit_amt
+            gr.update(interactive=False),  # withdraw_amt
+            gr.update(interactive=False),  # buy_symbol
+            gr.update(interactive=False),  # buy_qty
+            gr.update(interactive=False),  # deposit_btn
+            gr.update(interactive=False),  # withdraw_btn
+            gr.update(interactive=False),  # buy_btn
+            gr.update(interactive=False),  # sell_btn
+        )
 
 def deposit_funds(amount):
     global account
@@ -137,16 +157,17 @@ with gr.Blocks(title="シンプル取引シミュレーションUI") as demo:
         inputs=[init_deposit], 
         outputs=[
             creation_result,
-            deposit_amt, withdraw_amt, buy_symbol, buy_qty
+            deposit_amt, withdraw_amt, buy_symbol, buy_qty,
+            deposit_btn, withdraw_btn, buy_btn, sell_btn
         ]
     )
     deposit_btn.click(deposit_funds, inputs=deposit_amt, outputs=deposit_result)
     withdraw_btn.click(withdraw_funds, inputs=withdraw_amt, outputs=withdraw_result)
     buy_btn.click(buy_shares, inputs=[buy_symbol, buy_qty], outputs=buy_result)
     sell_btn.click(sell_shares, inputs=[sell_symbol, sell_qty], outputs=sell_result)
-    portfolio_btn.click(lambda: show_portfolio(), outputs=portfolio_result)
-    pnl_btn.click(lambda: show_profit_and_loss(), outputs=pnl_result)
-    history_btn.click(lambda: show_trade_history(), outputs=history_result)
+    portfolio_btn.click(show_portfolio, outputs=portfolio_result)
+    pnl_btn.click(show_profit_and_loss, outputs=pnl_result)
+    history_btn.click(show_trade_history, outputs=history_result)
 
 if __name__ == "__main__":
     demo.launch()
