@@ -35,7 +35,6 @@ class TrendingCompanyResearchList(BaseModel):
     """ すべての企業に関する詳細な調査のリスト """
     research_list: List[TrendingCompanyResearch] = Field(description="すべてのトレンド企業に関する包括的な調査")
 
-
 @CrewBase
 class StockPicker():
     """StockPicker crew"""

@@ -12,20 +12,18 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 os.makedirs('output', exist_ok=True)
 
 requirements = """
-A simple account management system for a trading simulation platform.
-The system should allow users to create an account, deposit funds, and withdraw funds.
-The system should allow users to record that they have bought or sold shares, providing a quantity.
-The system should calculate the total value of the user's portfolio, and the profit or loss from the initial deposit.
-The system should be able to report the holdings of the user at any point in time.
-The system should be able to report the profit or loss of the user at any point in time.
-The system should be able to list the transactions that the user has made over time.
-The system should prevent the user from withdrawing funds that would leave them with a negative balance, or
- from buying more shares than they can afford, or selling shares that they don't have.
- The system has access to a function get_share_price(symbol) which returns the current price of a share, and includes a test implementation that returns fixed prices for AAPL, TSLA, GOOGL.
+- 取引シミュレーションプラットフォーム用のシンプルなアカウント管理システム。
+- システムは、ユーザーがアカウントを作成し、資金を入金および出金できるようにする必要があります。
+- システムは、ユーザーが株式の売買を記録し、数量を提供する必要があります。
+- システムは、ユーザーのポートフォリオの合計額と、初期入金からの損益を計算する必要があります。
+- システムは、いつでもユーザーの保有資産を報告できる必要があります。
+- システムは、いつでもユーザーの損益を報告できる必要があります。
+- システムは、ユーザーが行った取引を時間の経過とともに一覧表示できる必要があります。
+- システムは、ユーザーがマイナス残高になるような資金の引き出し、または購入可能な株式数を超えて株式を購入したり、保有していない株式を売却したりすることを防ぐ必要があります。
+- システムは、株式の現在の価格を返す関数 get_share_price(symbol) にアクセスでき、AAPL、TSLA、GOOGL の固定価格を返すテスト実装が含まれています。
 """
 module_name = "accounts.py"
 class_name = "Account"
-
 
 def run():
     """
@@ -39,7 +37,6 @@ def run():
 
     # Create and run the crew
     result = EngineeringTeam().crew().kickoff(inputs=inputs)
-
 
 if __name__ == "__main__":
     run()

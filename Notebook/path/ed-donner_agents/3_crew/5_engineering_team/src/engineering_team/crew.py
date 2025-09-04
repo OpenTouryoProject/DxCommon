@@ -1,8 +1,6 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-
-
 @CrewBase
 class EngineeringTeam():
     """EngineeringTeam crew"""
@@ -10,6 +8,11 @@ class EngineeringTeam():
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
 
+    # ４つのエージェントと４つのタスクを定義
+    
+    # ４つのエージェント
+
+    # リード・エンジニア
     @agent
     def engineering_lead(self) -> Agent:
         return Agent(
@@ -17,17 +20,21 @@ class EngineeringTeam():
             verbose=True,
         )
 
+    # バックエンド・エンジニア
     @agent
     def backend_engineer(self) -> Agent:
         return Agent(
             config=self.agents_config['backend_engineer'],
             verbose=True,
-            allow_code_execution=True,
+
+            # コードを実行できる
+            allow_code_execution=True,   # Enable code execution
             code_execution_mode="safe",  # Uses Docker for safety
-            max_execution_time=500, 
-            max_retry_limit=3 
+            max_execution_time=500,      # Max execution time in seconds
+            max_retry_limit=3            # Number of retries for code execution
         )
     
+    # フロントエンド・エンジニア
     @agent
     def frontend_engineer(self) -> Agent:
         return Agent(
@@ -35,39 +42,48 @@ class EngineeringTeam():
             verbose=True,
         )
     
+    # テスト・エンジニア
     @agent
     def test_engineer(self) -> Agent:
         return Agent(
             config=self.agents_config['test_engineer'],
             verbose=True,
-            allow_code_execution=True,
+
+            # コードを実行できる
+            allow_code_execution=True,   # Enable code execution
             code_execution_mode="safe",  # Uses Docker for safety
-            max_execution_time=500, 
-            max_retry_limit=3 
+            max_execution_time=500,      # Max execution time in seconds
+            max_retry_limit=3            # Number of retries for code execution
         )
 
+    # ４つのタスク
+
+    # 設計タスク
     @task
     def design_task(self) -> Task:
         return Task(
             config=self.tasks_config['design_task']
         )
 
+    # バックエンド・コードタスク
     @task
-    def code_task(self) -> Task:
+    def backend_code_task(self) -> Task:
         return Task(
-            config=self.tasks_config['code_task'],
+            config=self.tasks_config['backend_code_task'],
         )
 
+    # フロントエンド・コードタスク
     @task
-    def frontend_task(self) -> Task:
+    def frontend_code_task(self) -> Task:
         return Task(
-            config=self.tasks_config['frontend_task'],
+            config=self.tasks_config['frontend_code_task'],
         )
 
+    # テスト・コードタスク
     @task
-    def test_task(self) -> Task:
+    def test_code_task(self) -> Task:
         return Task(
-            config=self.tasks_config['test_task'],
+            config=self.tasks_config['test_code_task'],
         )   
 
     @crew

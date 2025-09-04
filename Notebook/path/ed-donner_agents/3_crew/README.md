@@ -99,7 +99,7 @@ Day0の内容を日本語化＋コメント追加した。
    ```
    → "Hello from Docker!" が出れば成功です。
 
-7. **（オプション）sudo なしで Docker を使えるようにする**
+7. **sudo なしで Docker を使えるようにする**
    ```bash
    sudo usermod -aG docker $USER
    newgrp docker
@@ -109,7 +109,12 @@ Day0の内容を日本語化＋コメント追加した。
 # Day5：engineering_team
 講師が`crewai create crew engineering_team`コマンドを実行して作成したプロジェクトで、
 
-「xxxxxx」機能に書き直されている。
+「エンジニア・チーム」機能に書き直されている。
 
 内容は日本語化＋コメント追加してある。
 
+特に新しい機能は使用されていないが、以下の特徴を持つ。
+- 3_stock_pickerの`3*3`より多い`4*4`のエージェント*タスク
+- 4_coderと同様に、Dockerを使ったコード実行機能を使用している。
+
+ちなみに、生成されたアプリは `output`フォルダ に移動し `uv run app.py` と実行する。

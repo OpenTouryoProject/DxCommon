@@ -1,50 +1,64 @@
+
 design_task:
+
   description: >
-    Take the high level requirements described here and prepare a detailed design for the engineer;
-    everything should be in 1 python module, but outline the classes and methods in the module.
-    Here are the requirements: {requirements}
-    IMPORTANT: Only output the design in markdown format, laying out in detail the classes and functions in the module, describing the functionality.
+    ここで説明した高レベルの要件を踏まえ、エンジニア向けに詳細な設計を準備します。要件は次のとおり：{requirements}
+    - 設計は、全てを1つのPythonモジュールにまとめ、モジュール内の関数やクラス・メソッドの機能概要を記述することで達成する。
+    - 設計は、モジュール内の関数やクラス・メソッドについて、機能レベルで詳細な説明を日本語、Markdown形式でのみ出力する。
+
   expected_output: >
-    A detailed design for the engineer, identifying the classes and functions in the module.
+    モジュール内の関数やクラス・メソッドを識別する、エンジニア向けの詳細な設計。
+
   agent: engineering_lead
   output_file: output/{module_name}_design.md
 
-code_task:
+backend_code_task:
+
   description: >
-    Write a python module that implements the design described by the engineering lead, in order to achieve the requirements.
-    Here are the requirements: {requirements}
+    要件を満たすために、リード・エンジニアが設計した Python モジュール上にバックエンド・クラスを実装。要件は次のとおり：{requirements}
+
   expected_output: >
-    A python module that implements the design and achieves the requirements.
-    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
-    The output should be valid Python code that can be directly saved to a file and executed.
-  agent: backend_engineer
+    設計を実装することで、Python モジュール（*.pyファイル）上に、要件を満たすバックエンド・クラスを実装。
+    - 出力は、Python モジュール（*.pyファイル）に直接保存して実行できる有効な Python コードである必要がある。
+    - 出力は、Markdown 形式、コードブロックの区切り文字、バッククォートを一切使用しない、生の Python コードに限定する。
+
   context:
     - design_task
+
+  agent: backend_engineer
   output_file: output/{module_name}
 
-frontend_task:
+frontend_code_task:
+
   description: >
-    Write a gradio UI in a module app.py that demonstrates the given backend class in {module_name}.
-    Assume there is only 1 user, and keep the UI very simple indeed - just a prototype or demo.
-    Here are the requirements: {requirements}
+    モジュール app.py に、{module_name} バックエンド・モジュール中のクラスのデモンストレーションを行うGradio UI を実装。
+    ユーザーは 1 人だけと想定し、UI はプロトタイプまたはデモ程度にシンプルにする。要件は次のとおり: {requirements}
+
   expected_output: >
-    A gradio UI in module app.py that demonstrates the given backend class.
-    The file should be ready so that it can be run as-is, in the same directory as the backend module, and it should import the backend class from {module_name}.
-    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
-    The output should be valid Python code that can be directly saved to a file and executed.
-  agent: frontend_engineer
+    モジュール app.py 内で、指定されたバックエンド・モジュール中のクラスのデモンストレーションを行うGradio UI。
+    同ディレクトリ上の、バックエンド・モジュール {module_name} からバックエンド・クラスをインポートし実行できるように準備。
+    - 出力は、Python モジュール（*.pyファイル）に直接保存して実行できる有効な Python コードである必要がある。
+    - 出力は、Markdown 形式、コードブロックの区切り文字、バッククォートを一切使用しない、生の Python コードに限定する。
+
   context:
-    - code_task
+    - backend_code_task
+
+  agent: frontend_engineer
   output_file: output/app.py
 
-test_task:
+test_code_task:
+
   description: >
-    Write unit tests for the given backend module {module_name} and create a test_{module_name} in the same directory as the backend module.
+    - バックエンド・モジュール {module_name} 上のバックエンド・クラスの単体テストを記述する。
+    - バックエンド・モジュールと同じディレクトリに テスト・モジュール test_{module_name} を作成する。
+
   expected_output: >
-    A test_{module_name} module that tests the given backend module.
-    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
-    The output should be valid Python code that can be directly saved to a file and executed.
-  agent: test_engineer
+    指定されたバックエンド・モジュールをテストするテスト・モジュール test_{module_name}。
+    - 出力は、Python モジュール（*.pyファイル）に直接保存して実行できる有効な Python コードである必要がある。
+    - 出力は、Markdown 形式、コードブロックの区切り文字、バッククォートを一切使用しない、生の Python コードに限定する。
+
   context:
-    - code_task
+    - backend_code_task
+
+  agent: test_engineer
   output_file: output/test_{module_name}
