@@ -1,36 +1,48 @@
 # Day0：my_crew
-`crewai create crew my_crew`コマンドを実行
+`uv` と `crewai` の環境を整えるため、`setup` フォルダや `README` の内容から以下を実行
+
+※ `uv` は `install.sh ` を使用してインストール済みであること。  
+※ コレ等のコマンドは、`ed-donner_agents`フォルダで実行する。
+
+```bash
+uv self update
+uv sync
+uv tool install crewai
+uv tool upgrade crewai
+
+crewai install
+```
+
+次に、`3_crew`フォルダでcrewai create crew my_crew`コマンドを実行して
+
 - LLMプロバイダを選択：OpenAI
 - LLMのモデルIDを選択：gpt-4o-mini
 - APIキーを設定（スキップ可能）
 
-して生成されたプロジェクトで、
+プロジェクトを生成し、主に、非機能面（構成、アーキテクチャ）の確認を行う。
 
-主に、非機能面（構成、アーキテクチャ）の確認を行う目的。
+プロジェクトの実行は、カレント・ディレクトリで、以下を実行
 
+```bash
+$ crewai run
+```
 # Day0.5：jp_crew
-`crewai create crew jp_crew`コマンドを実行して生成されたプロジェクトで、
+コレは、同様に`crewai create crew jp_crew`コマンドを実行して生成されたプロジェクトで、
 
-Day0の内容を日本語化＋コメント追加した。
-
-主に、機能面（インストラクションとレポート）の確認を行う目的。
+主に、機能面（インストラクションとレポート）の確認を行うため、内容を日本語化＋コメント追加した。
 
 # Day1：1_debate
-講師が`crewai create crew debatew`コマンドを実行して作成したプロジェクトで、
+コレは、講師が`crewai create crew debatew`コマンドを実行して作成したプロジェクトで、
 
-「ディベート」機能に書き直されている。
-
-内容は日本語化＋コメント追加してある。
+「ディベート」機能に書き直されている。内容は日本語化＋コメント追加してある。
 
 `.env` は、本コースの前半で、`path` フォルダ直下に配置したモノを使うので不要。  
 （利用LLMは `agents.yaml` に直下書き、APIキーは、OPENAI_API_KEY, GOOGLE_API_KEY を使用）
 
 # Day2：2_financial_researcher
-講師が`crewai create crew financial_researcher`コマンドを実行して作成したプロジェクトで、
+コレは、講師が`crewai create crew financial_researcher`コマンドを実行して作成したプロジェクトで、
 
-「金融調査員」機能に書き直されている。
-
-内容は日本語化＋コメント追加してある。
+「金融調査員」機能に書き直されている。内容は日本語化＋コメント追加してある。
 
 機能的な追加は以下の2点だが、
 - researcherが、SerperDevToolを使用
@@ -39,11 +51,9 @@ Day0の内容を日本語化＋コメント追加した。
 後者は既定で引き継がれており不要のためコメントアウト。
 
 # Day3：3_stock_picker
-講師が`crewai create crew stock_picker`コマンドを実行して作成したプロジェクトで、
+コレは、講師が`crewai create crew stock_picker`コマンドを実行して作成したプロジェクトで、
 
-「銘柄選択投資」機能に書き直されている。
-
-内容は日本語化＋コメント追加してある。
+「銘柄選択投資」機能に書き直されている。内容は日本語化＋コメント追加してある。
 
 機能的な追加は以下の4, 5点
 - 各種エージェントが、構造化出力を使用
@@ -52,11 +62,9 @@ Day0の内容を日本語化＋コメント追加した。
 - 短期 / 長期 / エンティティ・メモリを使用するよう設定。
 
 # Day4：4_coder
-講師が`crewai create crew coder`コマンドを実行して作成したプロジェクトで、
+コレは、講師が`crewai create crew coder`コマンドを実行して作成したプロジェクトで、
 
-「コーダー・エージェント」機能に書き直されている。
-
-内容は日本語化＋コメント追加してある。
+「コーダー・エージェント」機能に書き直されている。内容は日本語化＋コメント追加してある。
 
 コーディングしたコードを安全に実行するためにDockerを使用する。
 
@@ -109,12 +117,15 @@ Day0の内容を日本語化＋コメント追加した。
 # Day5：engineering_team
 講師が`crewai create crew engineering_team`コマンドを実行して作成したプロジェクトで、
 
-「エンジニア・チーム」機能に書き直されている。
-
-内容は日本語化＋コメント追加してある。
+「エンジニア・チーム」機能に書き直されている。内容は日本語化＋コメント追加してある。
 
 特に新しい機能は使用されていないが、以下の特徴を持つ。
-- 3_stock_pickerの`3*3`より多い`4*4`のエージェント*タスク
+
+- 2_financial_researcherと同様に、context を使用。シーケンシャルだが次の次のエージェントに渡すため必須。
+- 3_stock_pickerの`3 * 3`より多い`4 * 4`のエージェント * タスクを使用する複雑なエージェント・チーム。
 - 4_coderと同様に、Dockerを使ったコード実行機能を使用している。
 
 ちなみに、生成されたアプリは `output`フォルダ に移動し `uv run app.py` と実行する。
+
+以下は、生成したままでは問題が在った部分を修正した際のコミットログ。  
+https://github.com/OpenTouryoProject/DxCommon/commit/24d2c7d2bb2582da8ac1435ca34c12463bcdd139
