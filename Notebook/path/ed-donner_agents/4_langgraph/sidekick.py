@@ -222,8 +222,8 @@ class Sidekick:
         feedback = {"role": "assistant", "content": result["messages"][-1].content}
         return history + [user, reply, feedback]
 
-    # State破棄時に呼ばれるクリーナップ・コード
-    # BrowserやPlaywrightのクリーンアップ処理
+    # (UIのSession)State破棄時に呼ばれるクリーナップ・コード
+    # BrowserやPlaywrightのクリーンアップ処理を行う。
     def cleanup(self):
         if self.browser:
             try:

@@ -8,7 +8,7 @@ async def setup():
     return sidekick
 
 # process_message → run_superstep
-# sidekick は `4_lab4.ipynb`版の thread に相当（≒ gr.State）。
+# sidekick は `4_lab4.ipynb`版の thread を包含
 async def process_message(sidekick, message, success_criteria, history):
     results = await sidekick.run_superstep(message, success_criteria, history)
     return results, sidekick
@@ -19,7 +19,7 @@ async def reset():
     await new_sidekick.setup()
     return "", "", None, new_sidekick
 
-# cleanupのラッパーで、State破棄時に呼ばれる。
+# cleanupのラッパーで、(UIのSession)State破棄時に呼ばれる。
 def free_resources(sidekick):
     print("Cleaning up")
     try:
@@ -32,10 +32,10 @@ def free_resources(sidekick):
 with gr.Blocks(title="Sidekick", theme=gr.themes.Default(primary_hue="emerald")) as ui:
     gr.Markdown("## Sidekick Personal Co-Worker")
 
-    # 先ずは、State破棄時のクリーナップ・コードだけを指定（初期値は後からセット）
+    # 先ずは、(UIのSession)State破棄時のクリーナップ・コードだけを指定（初期値は後からセット）
     sidekick = gr.State(delete_callback=free_resources)
     
-    # State初期化（UI立上毎）コレは、sidekick = setup([]) みたいな意味。
+    # UI立上毎に(UIのSession)State初期化。コレは、sidekick = setup([]) みたいな意味。
     ui.load(setup, [], [sidekick])
     
     # 各種UI要素
