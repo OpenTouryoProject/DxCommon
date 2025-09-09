@@ -46,13 +46,13 @@ def get_file_tools():
 # 各種ツールをLangchainのTool形式でまとめてリスト化して返す非同期関数。
 async def other_tools():
     
-    # ツール化
+    # pushのツール化
     push_tool = Tool(
         name="send_push_notification",
         func=push,
         description="Use this tool when you want to send a push notification")
     
-    # ツール化
+    # serper.runのツール化
     search_tool =Tool(
         name="search",
         func=serper.run,
