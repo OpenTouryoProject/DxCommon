@@ -1,6 +1,9 @@
+# MCPサーバーを簡単に立ち上げるクラス
 from mcp.server.fastmcp import FastMCP
+# MCPサーバーに変換したい元関数
 from market import get_share_price
 
+# accounts_server という名前のMCPサーバーを作成
 mcp = FastMCP("market_server")
 
 @mcp.tool()

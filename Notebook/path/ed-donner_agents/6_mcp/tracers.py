@@ -1,7 +1,8 @@
+import string
+import secrets
+
 from agents import TracingProcessor, Trace, Span
 from database import write_log
-import secrets
-import string
 
 ALPHANUM = string.ascii_lowercase + string.digits 
 

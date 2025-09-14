@@ -1,5 +1,5 @@
-import sqlite3
 import json
+import sqlite3
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -7,7 +7,7 @@ load_dotenv(override=True)
 
 DB = "accounts.db"
 
-
+# 初期化
 with sqlite3.connect(DB) as conn:
     cursor = conn.cursor()
     cursor.execute('CREATE TABLE IF NOT EXISTS accounts (name TEXT PRIMARY KEY, account TEXT)')
@@ -23,6 +23,7 @@ with sqlite3.connect(DB) as conn:
     cursor.execute('CREATE TABLE IF NOT EXISTS market (date TEXT PRIMARY KEY, data TEXT)')
     conn.commit()
 
+# account の write と read
 def write_account(name, account_dict):
     json_data = json.dumps(account_dict)
     with sqlite3.connect(DB) as conn:
@@ -40,7 +41,8 @@ def read_account(name):
         cursor.execute('SELECT account FROM accounts WHERE name = ?', (name.lower(),))
         row = cursor.fetchone()
         return json.loads(row[0]) if row else None
-    
+
+# log の write と read
 def write_log(name: str, type: str, message: str):
     """
     Write a log entry to the logs table.
@@ -82,6 +84,7 @@ def read_log(name: str, last_n=10):
         
         return reversed(cursor.fetchall())
 
+# market の write と read
 def write_market(date: str, data: dict) -> None:
     data_json = json.dumps(data)
     with sqlite3.connect(DB) as conn:
