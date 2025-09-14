@@ -1,16 +1,19 @@
-from pydantic import BaseModel
 import json
-from dotenv import load_dotenv
 from datetime import datetime
+from pydantic import BaseModel
+from dotenv import load_dotenv
+
+# 以下は独自実装
 from market import get_share_price
 from database import write_account, read_account, write_log
 
+# 初期化
 load_dotenv(override=True)
 
 INITIAL_BALANCE = 10_000.0
 SPREAD = 0.002
 
-
+# 株式取引データモデル
 class Transaction(BaseModel):
     symbol: str
     quantity: int
@@ -18,13 +21,15 @@ class Transaction(BaseModel):
     timestamp: str
     rationale: str
 
+    # 取引の総額を計算
     def total(self) -> float:
         return self.quantity * self.price
     
+    # 表示用の文字列
     def __repr__(self):
         return f"{abs(self.quantity)} shares of {self.symbol} at {self.price} each."
 
-
+# ユーザー・アカウント・データモデル
 class Account(BaseModel):
     name: str
     balance: float
@@ -33,6 +38,7 @@ class Account(BaseModel):
     transactions: list[Transaction]
     portfolio_value_time_series: list[tuple[str, float]]
 
+    # 初期値で作成メソッド
     @classmethod
     def get(cls, name: str):
         fields = read_account(name.lower())
@@ -48,10 +54,12 @@ class Account(BaseModel):
             write_account(name, fields)
         return cls(**fields)
     
-    
+    # DB保存
     def save(self):
+        # model_dump() は pydantic の辞書化メソッド
         write_account(self.name.lower(), self.model_dump())
-
+    
+    # DBリセット
     def reset(self, strategy: str):
         self.balance = INITIAL_BALANCE
         self.strategy = strategy
@@ -60,6 +68,7 @@ class Account(BaseModel):
         self.portfolio_value_time_series = []
         self.save()
 
+    # 入金処理
     def deposit(self, amount: float):
         """ Deposit funds into the account. """
         if amount <= 0:
@@ -68,6 +77,7 @@ class Account(BaseModel):
         print(f"Deposited ${amount}. New balance: ${self.balance}")
         self.save()
 
+    # 出金処理
     def withdraw(self, amount: float):
         """ Withdraw funds from the account, ensuring it doesn't go negative. """
         if amount > self.balance:
@@ -76,6 +86,7 @@ class Account(BaseModel):
         print(f"Withdrew ${amount}. New balance: ${self.balance}")
         self.save()
 
+    # 売り処理
     def buy_shares(self, symbol: str, quantity: int, rationale: str) -> str:
         """ Buy shares of a stock if sufficient funds are available. """
         price = get_share_price(symbol)
@@ -100,6 +111,7 @@ class Account(BaseModel):
         write_log(self.name, "account", f"Bought {quantity} of {symbol}")
         return "Completed. Latest details:\n" + self.report()
 
+    # 買い処理
     def sell_shares(self, symbol: str, quantity: int, rationale: str) -> str:
         """ Sell shares of a stock if the user has enough shares. """
         if self.holdings.get(symbol, 0) < quantity:
@@ -126,6 +138,7 @@ class Account(BaseModel):
         write_log(self.name, "account", f"Sold {quantity} of {symbol}")
         return "Completed. Latest details:\n" + self.report()
 
+    # ポートフォリオ評価（現金＋保有株の時価総額）
     def calculate_portfolio_value(self):
         """ Calculate the total value of the user's portfolio. """
         total_value = self.balance
@@ -133,23 +146,28 @@ class Account(BaseModel):
             total_value += get_share_price(symbol) * quantity
         return total_value
 
+    # ポートフォリオ評価（投資額からの損益計算）
     def calculate_profit_loss(self, portfolio_value: float):
         """ Calculate profit or loss from the initial spend. """
         initial_spend = sum(transaction.total() for transaction in self.transactions)
         return portfolio_value - initial_spend - self.balance
 
+    # 現金＋保有株の時価総額
     def get_holdings(self):
         """ Report the current holdings of the user. """
         return self.holdings
 
+    # 投資額からの損益計算
     def get_profit_loss(self):
         """ Report the user's profit or loss at any point in time. """
         return self.calculate_profit_loss()
 
+    # 全取引履歴リスト取得
     def list_transactions(self):
         """ List all transactions made by the user. """
         return [transaction.model_dump() for transaction in self.transactions]
     
+    # JSONレポート生成
     def report(self) -> str:
         """ Return a json string representing the account.  """
         portfolio_value = self.calculate_portfolio_value()
@@ -162,11 +180,13 @@ class Account(BaseModel):
         write_log(self.name, "account", f"Retrieved account details")
         return json.dumps(data)
     
+    # 戦略管理（投資戦略の取得）
     def get_strategy(self) -> str:
         """ Return the strategy of the account """
         write_log(self.name, "account", f"Retrieved strategy")
         return self.strategy
     
+    # 戦略管理（投資戦略の変更）
     def change_strategy(self, strategy: str) -> str:
         """ At your discretion, if you choose to, call this to change your investment strategy for the future """
         self.strategy = strategy

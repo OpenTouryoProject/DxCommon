@@ -1,8 +1,13 @@
+# MCPサーバーを簡単に立ち上げるクラス
 from mcp.server.fastmcp import FastMCP
+# MCPサーバーに変換したい元クラス
 from accounts import Account
 
+# accounts_server という名前のMCPサーバーを作成
 mcp = FastMCP("accounts_server")
 
+# 関数に @mcp.tool() デコレータを付け MCPクライアントから呼び出せるようにする。
+# クラスのメソッドを関数化（関数がクラス・インスタンスに処理を委譲）
 @mcp.tool()
 async def get_balance(name: str) -> float:
     """Get the cash balance of the given account name.
@@ -33,7 +38,6 @@ async def buy_shares(name: str, symbol: str, quantity: int, rationale: str) -> f
     """
     return Account.get(name).buy_shares(symbol, quantity, rationale)
 
-
 @mcp.tool()
 async def sell_shares(name: str, symbol: str, quantity: int, rationale: str) -> float:
     """Sell shares of a stock.
@@ -56,6 +60,8 @@ async def change_strategy(name: str, strategy: str) -> str:
     """
     return Account.get(name).change_strategy(strategy)
 
+# @mcp.resource("URI") デコレータで、外部から「リソース」として参照できる関数を定義
+# クラスのメソッドを関数化（関数がクラス・インスタンスに処理を委譲）
 @mcp.resource("accounts://accounts_server/{name}")
 async def read_account_resource(name: str) -> str:
     account = Account.get(name.lower())
