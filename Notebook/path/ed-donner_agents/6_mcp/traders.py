@@ -1,6 +1,8 @@
 # 基本
 import os
 import json
+
+# MCPサーバ起動コードのネストを減らす
 from contextlib import AsyncExitStack
 
 # OpneAI

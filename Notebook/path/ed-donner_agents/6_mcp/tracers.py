@@ -19,7 +19,7 @@ def make_trace_id(tag: str) -> str:
     random_suffix = ''.join(secrets.choice(ALPHANUM) for _ in range(pad_len))
     return f"trace_{tag}{random_suffix}"
 
-# TracingProcessor を継承して、トレースやスパンの開始/終了を監視してログに書き込むクラス。
+# TracingProcessor を継承して、トレースやスパンの開始/終了を監視してログDBに書き込むクラス。
 class LogTracer(TracingProcessor):
 
     # trace_id の中から タグ名だけを取り出す。

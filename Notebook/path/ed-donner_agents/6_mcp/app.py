@@ -1,11 +1,23 @@
+# Gradio + Plotly + Pandas を使った「仮想トレーダーのダッシュボード UI」 を構築
+
+# DataFrame
+import pandas as pd
+
+# UI系
+
+## WebUI
 import gradio as gr
 from util import css, js, Color
-import pandas as pd
-from trading_floor import names, lastnames, short_model_names
+
+## 時系列グラフ（ポートフォリオ推移）描画用
 import plotly.express as px
+
+# 自作
 from accounts import Account
 from database import read_log
+from trading_floor import names, lastnames, short_model_names
 
+# ログ表示で色を分けるための Enum 的クラス。
 mapper = {
     "trace": Color.WHITE,
     "agent": Color.CYAN,
@@ -14,29 +26,37 @@ mapper = {
     "response": Color.MAGENTA,
     "account": Color.RED,
 }
-
-
+ 
+# 1人のトレーダーに対応するクラス。
+# Account からデータを取り出して UI に出せる形式に整形
 class Trader:
+    
+    # 初期処理
     def __init__(self, name: str, lastname: str, model_name: str):
         self.name = name
         self.lastname = lastname
         self.model_name = model_name
         self.account = Account.get(name)
 
+    # Account を再取得して最新状態に更新
     def reload(self):
         self.account = Account.get(self.name)
 
+    # トレーダー名とモデル名を HTML化
     def get_title(self) -> str:
         return f"<div style='text-align: center;font-size:34px;'>{self.name}<span style='color:#ccc;font-size:24px;'> ({self.model_name}) - {self.lastname}</span></div>"
 
+    # 戦略を取得
     def get_strategy(self) -> str:
         return self.account.get_strategy()
 
+    # ポートフォリオ時系列をDataFrameで
     def get_portfolio_value_df(self) -> pd.DataFrame:
         df = pd.DataFrame(self.account.portfolio_value_time_series, columns=["datetime", "value"])
         df["datetime"] = pd.to_datetime(df["datetime"])
         return df
 
+    # DFのポートフォリオをPlotlyの折れ線グラフに変換。
     def get_portfolio_value_chart(self):
         df = self.get_portfolio_value_df()
         fig = px.line(df, x="datetime", y="value")
@@ -53,8 +73,11 @@ class Trader:
         fig.update_yaxes(tickfont=dict(size=8), tickformat=",.0f")
         return fig
 
+    # 保有銘柄のDataFrame
     def get_holdings_df(self) -> pd.DataFrame:
         """Convert holdings to DataFrame for display"""
+        # 保有資産をデータフレームに変換して表示する
+        
         holdings = self.account.get_holdings()
         if not holdings:
             return pd.DataFrame(columns=["Symbol", "Quantity"])
@@ -64,22 +87,29 @@ class Trader:
         )
         return df
 
+    # 取引履歴のDataFrame
     def get_transactions_df(self) -> pd.DataFrame:
         """Convert transactions to DataFrame for display"""
+        # トランザクションをデータフレームに変換して表示する
+        
         transactions = self.account.list_transactions()
         if not transactions:
             return pd.DataFrame(columns=["Timestamp", "Symbol", "Quantity", "Price", "Rationale"])
 
         return pd.DataFrame(transactions)
 
+    # 総資産・損益を HTML に整形
     def get_portfolio_value(self) -> str:
         """Calculate total portfolio value based on current prices"""
+        # 現在の価格に基づいてポートフォリオの合計価値を計算する
+        
         portfolio_value = self.account.calculate_portfolio_value() or 0.0
         pnl = self.account.calculate_profit_loss(portfolio_value) or 0.0
         color = "green" if pnl >= 0 else "red"
         emoji = "⬆" if pnl >= 0 else "⬇"
         return f"<div style='text-align: center;background-color:{color};'><span style='font-size:32px'>${portfolio_value:,.0f}</span><span style='font-size:24px'>&nbsp;&nbsp;&nbsp;{emoji}&nbsp;${pnl:,.0f}</span></div>"
 
+    # DB からログを取得し、色付き HTML で表示
     def get_logs(self, previous=None) -> str:
         logs = read_log(self.name, last_n=13)
         response = ""
@@ -92,8 +122,11 @@ class Trader:
             return response
         return gr.update()
 
-
+# UI 上に Trader を表示するビュークラス
+# Gradio コンポーネントをまとめ、タイマーで定期更新を行う。
 class TraderView:
+
+    # 初期化
     def __init__(self, trader: Trader):
         self.trader = trader
         self.portfolio_value = None
@@ -101,6 +134,7 @@ class TraderView:
         self.holdings_table = None
         self.transactions_table = None
 
+    # GradioのUI
     def make_ui(self):
         with gr.Column():
             gr.HTML(self.trader.get_title())
@@ -133,6 +167,8 @@ class TraderView:
                     elem_classes=["dataframe-fix"],
                 )
 
+        # 以下はイベント・ハンドラ（タイマー・イベント）みたいな
+        # 120秒ごとにトレーダー情報更新
         timer = gr.Timer(value=120)
         timer.tick(
             fn=self.refresh,
@@ -146,6 +182,8 @@ class TraderView:
             show_progress="hidden",
             queue=False,
         )
+
+        # 0.5秒ごとにログを更新。
         log_timer = gr.Timer(value=0.5)
         log_timer.tick(
             fn=self.trader.get_logs,
@@ -155,6 +193,7 @@ class TraderView:
             queue=False,
         )
 
+    # Trader.reload() を呼び出して最新の総資産/グラフ/保有銘柄/取引履歴を取得
     def refresh(self):
         self.trader.reload()
         return (
@@ -164,27 +203,33 @@ class TraderView:
             self.trader.get_transactions_df(),
         )
 
-
+# メインUIの構築
 # Main UI construction
 def create_ui():
     """Create the main Gradio UI for the trading simulation"""
+    # 取引シミュレーション用のメインGradio UIを作成する
 
+    # 表示用トレーダーを作成
     traders = [
         Trader(trader_name, lastname, model_name)
         for trader_name, lastname, model_name in zip(names, lastnames, short_model_names)
     ]
+    
+    # 表示用トレーダー・ビューを作成
     trader_views = [TraderView(trader) for trader in traders]
 
+    # gr.Blocks で全体を構築（CSS/JS 適用）
     with gr.Blocks(
         title="Traders", css=css, js=js, theme=gr.themes.Default(primary_hue="sky"), fill_width=True
     ) as ui:
-        with gr.Row():
+        with gr.Row(): # 各トレーダーの UI を表示
             for trader_view in trader_views:
                 trader_view.make_ui()
 
     return ui
 
-
+# エントリーポイント
+# Gradioアプリを起動し、ブラウザでダッシュボードを開く。
 if __name__ == "__main__":
     ui = create_ui()
     ui.launch(inbrowser=True)

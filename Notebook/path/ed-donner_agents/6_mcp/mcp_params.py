@@ -29,6 +29,7 @@ trader_mcp_server_params = [
 
 # リサーチャー向けのMCPサーバーのフルセット: Fetch、Brave Search、Memory
 # The full set of MCP servers for the researcher: Fetch, Brave Search and Memory
+# ※ 主に、envセクションで、エージェント毎の設定値で初期化（ココではストレージを切り替え）的な事もできる。
 def researcher_mcp_server_params(name: str):
     return [
         {"command": "uvx", "args": ["mcp-server-fetch"]},
