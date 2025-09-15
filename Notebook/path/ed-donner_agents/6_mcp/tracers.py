@@ -1,3 +1,5 @@
+# トレースとスパンの開始・終了をログに記録する仕組み
+
 import string
 import secrets
 
@@ -6,6 +8,7 @@ from database import write_log
 
 ALPHANUM = string.ascii_lowercase + string.digits 
 
+# 各トレース（処理単位）に一意の ID を生成する。
 def make_trace_id(tag: str) -> str:
     """
     Return a string of the form 'trace_<tag><random>',
@@ -16,8 +19,10 @@ def make_trace_id(tag: str) -> str:
     random_suffix = ''.join(secrets.choice(ALPHANUM) for _ in range(pad_len))
     return f"trace_{tag}{random_suffix}"
 
+# TracingProcessor を継承して、トレースやスパンの開始/終了を監視してログに書き込むクラス。
 class LogTracer(TracingProcessor):
 
+    # trace_id の中から タグ名だけを取り出す。
     def get_name(self, trace_or_span: Trace | Span) -> str | None:
         trace_id = trace_or_span.trace_id
         name = trace_id.split("_")[1]
@@ -26,16 +31,19 @@ class LogTracer(TracingProcessor):
         else:
             return None
 
+    # トレースが開始したとき → "Started: <trace.name>" をログDBに記録
     def on_trace_start(self, trace) -> None:
         name = self.get_name(trace)
         if name:
             write_log(name, "trace", f"Started: {trace.name}")
 
+    # トレースが終了したとき → "Ended: <trace.name>" をログDBに記録。
     def on_trace_end(self, trace) -> None:
         name = self.get_name(trace)
         if name:
             write_log(name, "trace", f"Ended: {trace.name}")
 
+    # スパンの開始ログ、Started span.span_dataの中身をログDBに記録。
     def on_span_start(self, span) -> None:
         name = self.get_name(span)
         type = span.span_data.type if span.span_data else "span"
@@ -52,6 +60,7 @@ class LogTracer(TracingProcessor):
                 message += f" {span.error}"
             write_log(name, type, message)
 
+    # スパンの終了ログ、Ended span.span_dataの中身をログDBに記録。
     def on_span_end(self, span) -> None:
         name = self.get_name(span)
         type = span.span_data.type if span.span_data else "span"
@@ -69,8 +78,10 @@ class LogTracer(TracingProcessor):
                 message += f" {span.error}"
             write_log(name, type, message)
 
+    # インターフェース上必要なメソッドだが、ここでは未実装。
     def force_flush(self) -> None:
         pass
 
+    # インターフェース上必要なメソッドだが、ここでは未実装。
     def shutdown(self) -> None:
         pass

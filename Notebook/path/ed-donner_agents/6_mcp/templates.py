@@ -1,10 +1,11 @@
 from datetime import datetime
 from market import is_paid_polygon, is_realtime_polygon
 
-# 金融取引支援エージェントの役割と指示メッセージを生成するための関数群
+# エージェントの役割と指示メッセージを生成するための関数群
 
-# 市場データアクセス権限に応じた説明文の分岐
+# アクセス権限に応じた説明文の分岐
 # Polygon API（株価データ提供サービス）の契約状況に応じて使えるデータの種類を切り替え
+# トレーダーのシステムプロンプト内で利用
 
 if is_realtime_polygon:
     # リアルタイムの市場データツールにアクセスできます。
@@ -20,9 +21,9 @@ else:
     # 終値の市場データにアクセスできます。get_share_price ツールを使用して前日の終値時点の株価を取得します。
     note = "You have access to end of day market data; use you get_share_price tool to get the share price as of the prior close."
 
-# エージェントの役割に応じた指示文生成関数
+# エージェントの役割に応じたシステムプロンプト関数
 
-# 金融リサーチャー用
+# リサーチャー用システムプロンプト関数
 # ・Web検索を使ってニュース・投資機会を探す役割を指示
 # ・知識グラフを使って情報を蓄積・再利用するよう強調
 # ・日時を挿入し、最新状況に基づいた調査を促す
@@ -44,7 +45,7 @@ If there isn't a specific request, then just respond with investment opportuniti
 The current datetime is {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
-# リサーチツールの説明を返す
+# リサーチ・ツールの説明を返す
 # ユーザーの依頼に基づき、株や市場のニュースを探す機能を示す
 def research_tool():
     return "This tool researches online for news and opportunities, \
@@ -52,7 +53,7 @@ either based on your specific request to look into a certain stock, \
 or generally for notable financial news and opportunities. \
 Describe what kind of research you're looking for."
 
-# 個別のトレーダー（名前つき）用
+# 個別のトレーダー（名前つき）用システムプロンプト関数
 # ・自分のポートフォリオを戦略に基づき運用することを指示
 # ・利用可能なツール（リサーチ、株価データ、売買、エンティティ記憶）を列挙
 # ・取引後はプッシュ通知と簡単なレポートを出すよう要求
@@ -70,7 +71,7 @@ After you've completed trading, send a push notification with a brief summary of
 Your goal is to maximize your profits according to your strategy.
 """
 
-# 具体的な行動指示メッセージ関数
+# トレーダー向け行動指示メッセージ関数
 
 # 新しい投資機会を探すことを目的とした指示
 # ツールを使ってリサーチ・株価調査・取引を行うよう促す

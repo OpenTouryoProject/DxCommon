@@ -1,12 +1,16 @@
-from contextlib import AsyncExitStack
-from accounts_client import read_accounts_resource, read_strategy_resource
-from tracers import make_trace_id
-from agents import Agent, Tool, Runner, OpenAIChatCompletionsModel, trace
-from openai import AsyncOpenAI
-from dotenv import load_dotenv
+# 基本
 import os
 import json
+from contextlib import AsyncExitStack
+
+# OpneAI
+from openai import AsyncOpenAI
+from agents import Agent, Tool, Runner, OpenAIChatCompletionsModel, trace
 from agents.mcp import MCPServerStdio
+
+# 自作
+from accounts_client import read_accounts_resource, read_strategy_resource
+from mcp_params import trader_mcp_server_params, researcher_mcp_server_params
 from templates import (
     researcher_instructions,
     trader_instructions,
@@ -14,28 +18,34 @@ from templates import (
     rebalance_message,
     research_tool,
 )
-from mcp_params import trader_mcp_server_params, researcher_mcp_server_params
+from tracers import make_trace_id
 
+# 初期化
+from dotenv import load_dotenv
 load_dotenv(override=True)
 
+# 取引ターン数
+MAX_TURNS = 30
+
+# API_KEY
 deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
 grok_api_key = os.getenv("GROK_API_KEY")
 openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
+# LLM
+## URL
 DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
 GROK_BASE_URL = "https://api.x.ai/v1"
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-
-MAX_TURNS = 30
-
+## Client（？）
 openrouter_client = AsyncOpenAI(base_url=OPENROUTER_BASE_URL, api_key=openrouter_api_key)
 deepseek_client = AsyncOpenAI(base_url=DEEPSEEK_BASE_URL, api_key=deepseek_api_key)
 grok_client = AsyncOpenAI(base_url=GROK_BASE_URL, api_key=grok_api_key)
 gemini_client = AsyncOpenAI(base_url=GEMINI_BASE_URL, api_key=google_api_key)
 
-
+# LLMの取得
 def get_model(model_name: str):
     if "/" in model_name:
         return OpenAIChatCompletionsModel(model=model_name, openai_client=openrouter_client)
@@ -48,7 +58,7 @@ def get_model(model_name: str):
     else:
         return model_name
 
-
+# リサーチャー・エージェントのインスタンス化
 async def get_researcher(mcp_servers, model_name) -> Agent:
     researcher = Agent(
         name="Researcher",
@@ -58,20 +68,25 @@ async def get_researcher(mcp_servers, model_name) -> Agent:
     )
     return researcher
 
-
+# リサーチャー・エージェントをツール化
 async def get_researcher_tool(mcp_servers, model_name) -> Tool:
     researcher = await get_researcher(mcp_servers, model_name)
     return researcher.as_tool(tool_name="Researcher", tool_description=research_tool())
 
-
+# トレーダー・エージェント関係の処理はクラス化
 class Trader:
+    # 初期化処理
     def __init__(self, name: str, lastname="Trader", model_name="gpt-4o-mini"):
         self.name = name
         self.lastname = lastname
         self.agent = None
         self.model_name = model_name
+        
+        # True なら売買、False ならリバランス
         self.do_trade = True
 
+    # トレーダー・エージェントのインスタンス化
+    # ※ リサーチャー・エージェントをツールとして設定
     async def create_agent(self, trader_mcp_servers, researcher_mcp_servers) -> Agent:
         tool = await get_researcher_tool(researcher_mcp_servers, self.model_name)
         self.agent = Agent(
@@ -83,16 +98,22 @@ class Trader:
         )
         return self.agent
 
+    # アカウント・レポートの簡易レポート化
     async def get_account_report(self) -> str:
         account = await read_accounts_resource(self.name)
         account_json = json.loads(account)
         account_json.pop("portfolio_value_time_series", None)
         return json.dumps(account_json)
 
+    # トレーダー・エージェントを実行（最大30ターン）
     async def run_agent(self, trader_mcp_servers, researcher_mcp_servers):
         self.agent = await self.create_agent(trader_mcp_servers, researcher_mcp_servers)
+
+        # strategy, account
         account = await self.get_account_report()
         strategy = await read_strategy_resource(self.name)
+
+        # trade_message or rebalance_message(self.name, strategy, account)
         message = (
             trade_message(self.name, strategy, account)
             if self.do_trade
@@ -100,6 +121,7 @@ class Trader:
         )
         await Runner.run(self.agent, message, max_turns=MAX_TURNS)
 
+    # 両エージェント用のMCPサーバーを立上てrun_agent（上記の関数）を呼出
     async def run_with_mcp_servers(self):
         async with AsyncExitStack() as stack:
             trader_mcp_servers = [
@@ -117,12 +139,16 @@ class Trader:
                 ]
                 await self.run_agent(trader_mcp_servers, researcher_mcp_servers)
 
+    # トレースを立上てrun_agent（上記の関数）を呼出
+    # トレードかリバランスかでトレース名を変える
     async def run_with_trace(self):
         trace_name = f"{self.name}-trading" if self.do_trade else f"{self.name}-rebalancing"
         trace_id = make_trace_id(f"{self.name.lower()}")
         with trace(trace_name, trace_id=trace_id):
             await self.run_with_mcp_servers()
 
+    # runのルートで、run_with_trace（上記の関数）を呼出
+    # 実行後に do_trade を反転（次回はリバランスになる）
     async def run(self):
         try:
             await self.run_with_trace()
