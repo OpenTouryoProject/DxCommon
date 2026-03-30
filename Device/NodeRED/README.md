@@ -1,2 +1,0 @@
-# NodeRED
-Node-RED Projects.
