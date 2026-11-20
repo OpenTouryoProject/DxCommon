@@ -286,3 +286,14 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# --- Notebook / Python / LLM ---
+.env
+.ipynb_checkpoints/
+
+# CrewAI memory (vector store)
+Notebook/path/ed-donner_agents/3_crew/*/memory/*/
+
+# ed-donner_llm generated artifacts
+Notebook/path/ed-donner_llm/week4/optimize_*
+Notebook/path/ed-donner_llm/week8/temp_batches/
