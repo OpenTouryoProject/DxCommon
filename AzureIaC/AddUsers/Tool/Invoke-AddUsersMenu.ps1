@@ -22,6 +22,13 @@ $ErrorActionPreference = 'Stop'
 $upn = @{ Name = 'UserPrincipalName'; Prompt = '対象ユーザーのメールアドレス / UPN'; Required = $true }
 
 $commands = @(
+    @{ Label = 'Test-Prerequisites : 前提（モジュール / ログイン）を確認（読み取り専用）'; Script = 'Test-Prerequisites.ps1'; Danger = $false
+       Params = @() },
+    @{ Label = 'New-MemberUser  : メンバーユーザーを作成（パスワードは自動生成）'; Script = 'New-MemberUser.ps1'; Danger = $true
+       Note = '初期パスワードは画面にだけ表示される。MFA 必須のテナントでは、ゲストよりこちらが確実。'
+       Params = @(
+            @{ Name = 'UserName'; Prompt = 'ユーザー名（@ の前）'; Required = $true },
+            @{ Name = 'DisplayName'; Prompt = '表示名' }) },
     @{ Label = 'New-CustomRoles : カスタムロール 3 種を作成'; Script = 'New-CustomRoles.ps1'; Danger = $true
        Note = '現在のサブスクリプションにロール定義を作成する（所有者などの権限が必要）。'
        Params = @() },
@@ -36,7 +43,9 @@ $commands = @(
             @{ Name = 'SkipResourceGroupRoles'; Prompt = 'リソースグループへの割り当てをしない'; Kind = 'Switch'; Default = $false },
             @{ Name = 'SkipSubscriptionRole'; Prompt = 'サブスクリプションへの割り当てをしない'; Kind = 'Switch'; Default = $false }) },
     @{ Label = 'Show-Users      : ゲスト / ロール / 割り当てを表示（読み取り専用）'; Script = 'Show-Users.ps1'; Danger = $false
-       Params = @(@{ Name = 'UserPrincipalName'; Prompt = 'ロール割り当てを見るユーザー' }) }
+       Params = @(@{ Name = 'UserPrincipalName'; Prompt = 'ロール割り当てを見るユーザー' }) },
+    @{ Label = 'Remove-User     : ユーザーをロール割り当てごと削除'; Script = 'Remove-User.ps1'; Danger = $true; Destroy = $true
+       Params = @($upn) }
 )
 
 Start-ToolMenu -Title 'AddUsers 対話メニュー (Azure PowerShell)' -Commands $commands -ToolDir $PSScriptRoot

@@ -27,6 +27,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Simplest.Common.ps1')
 $null = Assert-AzLogin
+Assert-ResourceProviders $RequiredProviders
 
 $cred = Get-CredentialIfNull $Credential "VM '$VmName' の管理者ユーザー名とパスワード"
 
@@ -52,6 +53,6 @@ if (-not $NoAutoShutdown) {
 
 Say ''
 Say 'Public IP 一覧:' -Color Cyan
-Get-AzPublicIpAddress | Format-Table Name, ResourceGroupName, IpAddress, Sku -AutoSize | Out-Host
+Get-AzPublicIpAddress | Format-Table Name, ResourceGroupName, IpAddress, @{ n = 'Sku'; e = { $_.Sku.Name } } -AutoSize | Out-Host
 
 Say "完了: サンドボックス VM '$VmName' を作成しました。" -Color Green

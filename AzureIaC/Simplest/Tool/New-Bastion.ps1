@@ -22,6 +22,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Simplest.Common.ps1')
 $null = Assert-AzLogin
+Assert-ResourceProviders $RequiredProviders
 
 Initialize-ResourceGroup $ResourceGroupName $Location
 

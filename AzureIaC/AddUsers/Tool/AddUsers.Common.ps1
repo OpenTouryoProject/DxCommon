@@ -148,7 +148,8 @@ function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
             Say ("  コマンド : {0}" -f $cmd.Label)
             Say ("  実行内容 : {0}" -f (Format-CommandLine $cmd.Script $named)) -Color White
             if ($cmd.Note)   { Say ("  ※ {0}" -f $cmd.Note) -Color DarkGray }
-            if ($cmd.Danger) { Say '  ※ Azure のリソースを作成・変更します（課金や権限変更を伴う場合があります）。内容をよく確認してください。' -Color Yellow }
+            if ($cmd.Destroy) { Say '  ※ リソースを削除します。元に戻せません。スクリプトが削除対象を表示するので、よく確認してください。' -Color Red }
+            elseif ($cmd.Danger) { Say '  ※ Azure のリソースを作成・変更します（課金や権限変更を伴う場合があります）。内容をよく確認してください。' -Color Yellow }
 
             # 4. GO / NOGO
             Say ''
@@ -253,4 +254,60 @@ function Invoke-GraphApi([string]$Method, [string]$Path, $Body = $null) {
         $detail = if ($_.ErrorDetails.Message) { $_.ErrorDetails.Message } else { $_.Exception.Message }
         throw "Microsoft Graph の呼び出しに失敗しました ($Method $Path): $detail"
     }
+}
+
+# ==============================================================================
+# 共通: 前提チェック・削除確認・リソース ID ヘルパ
+# ==============================================================================
+
+# 削除などの確認。-Force のときは確認しない。
+function Confirm-Action([string]$Message, [switch]$Force) {
+    if ($Force) { return $true }
+    return (Read-YesNo $Message $false)
+}
+
+# リソースプロバイダーの登録状態を返す（未登録なら NotRegistered）。
+function Get-ProviderState([string]$Namespace) {
+    $p = Get-AzResourceProvider -ProviderNamespace $Namespace -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($p) { return [string]$p.RegistrationState } else { return 'NotRegistered' }
+}
+
+# 必要なリソースプロバイダーが未登録なら、分かりやすいメッセージで止める。
+function Assert-ResourceProviders([string[]]$Namespaces) {
+    $missing = @($Namespaces | Where-Object { (Get-ProviderState $_) -ne 'Registered' })
+    if ($missing.Count -gt 0) {
+        throw ("リソースプロバイダーが未登録です: {0}。.\Test-Prerequisites.ps1 -Register で登録してください。" -f ($missing -join ', '))
+    }
+}
+
+# リソース ID からリソースグループ名と名前を取り出す。
+function Split-ResourceId([string]$Id) {
+    $p = $Id -split '/'
+    return @{ ResourceGroupName = $p[4]; Name = $p[-1] }
+}
+
+$RequiredModules   = @('Az.Accounts', 'Az.Resources')
+$RequiredProviders = @('Microsoft.Authorization')
+
+# 暗号論的乱数で、各文字種を含むパスワードを生成する。
+function New-RandomPassword([int]$Length = 20) {
+    $sets = @('ABCDEFGHJKLMNPQRSTUVWXYZ', 'abcdefghijkmnopqrstuvwxyz', '23456789', '!#$%&*-_=+')
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $next = {
+        param([int]$Max)   # 0 以上 Max 未満の乱数（剰余の偏りを避けるため、範囲外は引き直す）
+        $limit = [uint32]::MaxValue - ([uint32]::MaxValue % [uint32]$Max)
+        $b = New-Object byte[] 4
+        do { $rng.GetBytes($b); $v = [BitConverter]::ToUInt32($b, 0) } while ($v -ge $limit)
+        return [int]($v % [uint32]$Max)
+    }
+    $all = -join $sets
+    $chars = New-Object System.Collections.Generic.List[char]
+    foreach ($s in $sets) { $chars.Add($s[(& $next $s.Length)]) }
+    while ($chars.Count -lt $Length) { $chars.Add($all[(& $next $all.Length)]) }
+    for ($i = $chars.Count - 1; $i -gt 0; $i--) {   # Fisher-Yates シャッフル
+        $j = & $next ($i + 1)
+        $tmp = $chars[$i]; $chars[$i] = $chars[$j]; $chars[$j] = $tmp
+    }
+    $rng.Dispose()
+    return (-join $chars)
 }

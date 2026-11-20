@@ -8,6 +8,9 @@
     POST /invitations を呼び出す。招待には Graph の User.Invite.All 相当の権限が必要で、
     権限不足の場合は 403 になる（その場合は Azure Portal の Entra ID から招待する）。
 
+    ※ 個人の Microsoft アカウント（Gmail などで作ったもの）のゲストは、MFA が必須のテナントでは、
+      MFA の登録に失敗することがある。その場合は New-MemberUser.ps1 でメンバーユーザーを作る。
+
 .EXAMPLE
     .\Invite-GuestUser.ps1 -MailAddress user@example.com
 #>
@@ -31,3 +34,4 @@ $res = Invoke-GraphApi -Method POST -Path '/invitations' -Body @{
 }
 Say ("  招待状態: {0} / ユーザー ID: {1}" -f $res.status, $res.invitedUser.id) -Color DarkGray
 Say '完了: 招待しました。' -Color Green
+Say '  ※ 個人の Microsoft アカウントは、MFA 必須のテナントで登録に失敗することがあります。その場合は New-MemberUser.ps1 を使ってください。' -Color DarkGray

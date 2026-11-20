@@ -34,6 +34,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'SingleVM.Common.ps1')
 $null = Assert-AzLogin
+Assert-ResourceProviders $RequiredProviders
 
 $img = Get-VmImageSpec $OS
 $cred = Get-CredentialIfNull $Credential "VM '$VmName' の管理者ユーザー名とパスワード"

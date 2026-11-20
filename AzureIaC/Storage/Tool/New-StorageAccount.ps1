@@ -26,6 +26,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Storage.Common.ps1')
 $ctx = Assert-AzLogin
+Assert-ResourceProviders $RequiredProviders
 if (-not $UserPrincipalName) { $UserPrincipalName = $ctx.Account.Id }
 $subscriptionId = $ctx.Subscription.Id
 

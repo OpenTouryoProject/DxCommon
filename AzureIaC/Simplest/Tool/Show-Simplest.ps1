@@ -32,5 +32,5 @@ foreach ($rg in @($BastionResourceGroupName, $SandboxResourceGroupName)) {
     Say 'VM:' -Color DarkGray
     Get-AzVM -ResourceGroupName $rg -Status | Format-Table Name, PowerState, Location -AutoSize | Out-Host
     Say 'Public IP:' -Color DarkGray
-    Get-AzPublicIpAddress -ResourceGroupName $rg | Format-Table Name, IpAddress, Sku -AutoSize | Out-Host
+    Get-AzPublicIpAddress -ResourceGroupName $rg | Format-Table Name, IpAddress, @{ n = 'Sku'; e = { $_.Sku.Name } } -AutoSize | Out-Host
 }

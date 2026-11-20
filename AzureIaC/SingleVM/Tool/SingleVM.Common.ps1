@@ -149,7 +149,8 @@ function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
             Say ("  コマンド : {0}" -f $cmd.Label)
             Say ("  実行内容 : {0}" -f (Format-CommandLine $cmd.Script $named)) -Color White
             if ($cmd.Note)   { Say ("  ※ {0}" -f $cmd.Note) -Color DarkGray }
-            if ($cmd.Danger) { Say '  ※ Azure のリソースを作成・変更します（課金や権限変更を伴う場合があります）。内容をよく確認してください。' -Color Yellow }
+            if ($cmd.Destroy) { Say '  ※ リソースを削除します。元に戻せません。スクリプトが削除対象を表示するので、よく確認してください。' -Color Red }
+            elseif ($cmd.Danger) { Say '  ※ Azure のリソースを作成・変更します（課金や権限変更を伴う場合があります）。内容をよく確認してください。' -Color Yellow }
 
             # 4. GO / NOGO
             Say ''
@@ -225,12 +226,6 @@ function Get-CredentialIfNull([pscredential]$Credential, [string]$Message) {
     return (Get-Credential -Message $Message)
 }
 
-# リソース ID からリソースグループ名と名前を取り出す。
-function Split-ResourceId([string]$Id) {
-    $p = $Id -split '/'
-    return @{ ResourceGroupName = $p[4]; Name = $p[-1] }
-}
-
 # VM の 1 つ目の NIC を返す。
 function Get-VmNic($Vm) {
     $r = Split-ResourceId $Vm.NetworkProfile.NetworkInterfaces[0].Id
@@ -245,3 +240,36 @@ function Get-VmPublicIp($Vm) {
     $r = Split-ResourceId $pipId
     return (Get-AzPublicIpAddress -ResourceGroupName $r.ResourceGroupName -Name $r.Name).IpAddress
 }
+
+# ==============================================================================
+# 共通: 前提チェック・削除確認・リソース ID ヘルパ
+# ==============================================================================
+
+# 削除などの確認。-Force のときは確認しない。
+function Confirm-Action([string]$Message, [switch]$Force) {
+    if ($Force) { return $true }
+    return (Read-YesNo $Message $false)
+}
+
+# リソースプロバイダーの登録状態を返す（未登録なら NotRegistered）。
+function Get-ProviderState([string]$Namespace) {
+    $p = Get-AzResourceProvider -ProviderNamespace $Namespace -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($p) { return [string]$p.RegistrationState } else { return 'NotRegistered' }
+}
+
+# 必要なリソースプロバイダーが未登録なら、分かりやすいメッセージで止める。
+function Assert-ResourceProviders([string[]]$Namespaces) {
+    $missing = @($Namespaces | Where-Object { (Get-ProviderState $_) -ne 'Registered' })
+    if ($missing.Count -gt 0) {
+        throw ("リソースプロバイダーが未登録です: {0}。.\Test-Prerequisites.ps1 -Register で登録してください。" -f ($missing -join ', '))
+    }
+}
+
+# リソース ID からリソースグループ名と名前を取り出す。
+function Split-ResourceId([string]$Id) {
+    $p = $Id -split '/'
+    return @{ ResourceGroupName = $p[4]; Name = $p[-1] }
+}
+
+$RequiredModules   = @('Az.Accounts', 'Az.Resources', 'Az.Network', 'Az.Compute')
+$RequiredProviders = @('Microsoft.Network', 'Microsoft.Compute')

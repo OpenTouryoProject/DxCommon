@@ -19,7 +19,7 @@ $ErrorActionPreference = 'Stop'
 $ctx = Assert-AzLogin
 
 Say 'カスタムロール:' -Color Cyan
-Get-AzRoleDefinition -Custom | Where-Object { $CustomRoles.Name -contains $_.Name } |
+Get-AzRoleDefinition -Custom -WarningAction SilentlyContinue | Where-Object { $CustomRoles.Name -contains $_.Name } |
     Format-Table Name, Description -AutoSize | Out-Host
 
 Say 'ゲストユーザー:' -Color Cyan
@@ -32,6 +32,11 @@ catch { Say ("  取得できません: {0}" -f $_.Exception.Message) -Color Yell
 
 if ($UserPrincipalName) {
     Say "ロール割り当て: $UserPrincipalName" -Color Cyan
-    Get-AzRoleAssignment -SignInName $UserPrincipalName |
-        Format-Table RoleDefinitionName, Scope -AutoSize | Out-Host
+    $user = Get-AzADUser -Mail $UserPrincipalName
+    if (-not $user) { $user = Get-AzADUser -UserPrincipalName $UserPrincipalName }
+    if (-not $user) { Say '  ユーザーが見つかりません。' -Color Yellow }
+    else {
+        Get-AzRoleAssignment -ObjectId @($user)[0].Id |
+            Format-Table RoleDefinitionName, Scope -AutoSize | Out-Host
+    }
 }

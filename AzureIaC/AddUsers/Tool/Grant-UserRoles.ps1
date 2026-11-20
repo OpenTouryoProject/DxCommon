@@ -36,15 +36,23 @@ $ErrorActionPreference = 'Stop'
 $ctx = Assert-AzLogin
 $subscriptionId = $ctx.Subscription.Id
 
+# ゲストの UPN は "<mail>#EXT#@tenant" 形式のため、-SignInName（メール）では解決できない。
+# メール → UPN の順でオブジェクト ID を引いて、-ObjectId で割り当てる。
+$user = Get-AzADUser -Mail $UserPrincipalName
+if (-not $user) { $user = Get-AzADUser -UserPrincipalName $UserPrincipalName }
+if (-not $user) { throw "ユーザー '$UserPrincipalName' が見つかりません。ゲストの場合は先に Invite-GuestUser.ps1 で招待してください。" }
+$user = @($user)[0]
+Say "  対象ユーザー: $($user.UserPrincipalName) ($($user.Id))" -Color DarkGray
+
 function Grant-Role([string]$RoleName, [string]$Scope) {
-    $exists = Get-AzRoleAssignment -SignInName $UserPrincipalName -RoleDefinitionName $RoleName -Scope $Scope -ErrorAction SilentlyContinue |
+    $exists = Get-AzRoleAssignment -ObjectId $user.Id -RoleDefinitionName $RoleName -Scope $Scope -ErrorAction SilentlyContinue |
         Where-Object { $_.Scope -eq $Scope }
     if ($exists) {
         Say "  '$RoleName' は割り当て済みです（スキップ）: $Scope" -Color DarkGray
         return
     }
     Say "  '$RoleName' を割り当てます: $Scope" -Color Cyan
-    $null = New-AzRoleAssignment -SignInName $UserPrincipalName -RoleDefinitionName $RoleName -Scope $Scope
+    $null = New-AzRoleAssignment -ObjectId $user.Id -RoleDefinitionName $RoleName -Scope $Scope
 }
 
 if (-not $SkipResourceGroupRoles) {

@@ -22,20 +22,24 @@ $subscriptionId = $ctx.Subscription.Id
 Say "  サブスクリプション: $subscriptionId" -Color DarkGray
 
 foreach ($def in $CustomRoles) {
-    if (Get-AzRoleDefinition -Name $def.Name -ErrorAction SilentlyContinue) {
+    if (Get-AzRoleDefinition -Name $def.Name -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) {
         Say "  ロール '$($def.Name)' は既に存在します（スキップ）" -Color DarkGray
         continue
     }
     Say "  ロール '$($def.Name)' を作成します" -Color Cyan
-    $role = Get-AzRoleDefinition 'Virtual Machine Contributor'
+    $role = Get-AzRoleDefinition 'Virtual Machine Contributor' -WarningAction SilentlyContinue
     $role.Id = $null
     $role.Name = $def.Name
     $role.Description = $def.Description
-    $role.Actions.Clear()
-    foreach ($a in $def.Actions) { $role.Actions.Add($a) }
+    # Az.Resources 10.x 以降は Actions などが Permissions[n] 配下に移っている（旧: $role.Actions）。
+    $perm = $role.Permissions[0]
+    $perm.Actions = [System.Collections.Generic.List[string]]::new([string[]]$def.Actions)
+    $perm.NotActions = [System.Collections.Generic.List[string]]::new()
+    $perm.DataActions = [System.Collections.Generic.List[string]]::new()
+    $perm.NotDataActions = [System.Collections.Generic.List[string]]::new()
     $role.AssignableScopes.Clear()
     $role.AssignableScopes.Add("/subscriptions/$subscriptionId")
-    $null = New-AzRoleDefinition -Role $role
+    $null = New-AzRoleDefinition -Role $role -WarningAction SilentlyContinue
 }
 
 Say '完了: カスタムロールを用意しました。' -Color Green

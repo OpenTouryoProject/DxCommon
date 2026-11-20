@@ -23,6 +23,11 @@ $rg = @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Defaul
 $sa = @{ Name = 'StorageAccountName'; Prompt = 'ストレージアカウント名（グローバルで一意）'; Default = 'osscjpdevinfra' }
 
 $commands = @(
+    @{ Label = 'Test-Prerequisites     : 前提（モジュール / ログイン / プロバイダー）を確認（読み取り専用）'; Script = 'Test-Prerequisites.ps1'; Danger = $false
+       Params = @() },
+    @{ Label = 'Test-Prerequisites -Register : 未登録のリソースプロバイダーを登録'; Script = 'Test-Prerequisites.ps1'; Danger = $true
+       Note = 'サブスクリプションにリソースプロバイダーを登録する（無料・取り消し可能）。'
+       Params = @(@{ Name = 'Register'; Prompt = '未登録のプロバイダーを登録する'; Kind = 'Switch'; Default = $true }) },
     @{ Label = 'New-StorageAccount     : RG / ストレージアカウント / ロール / コンテナを作成'; Script = 'New-StorageAccount.ps1'; Danger = $true
        Note = '操作ユーザーに "Storage Blob Data Contributor" を割り当てる。'
        Params = @(
@@ -31,7 +36,10 @@ $commands = @(
     @{ Label = 'Add-StorageNetworkRule : 許可する IP アドレスを追加'; Script = 'Add-StorageNetworkRule.ps1'; Danger = $true
        Params = @($rg, $sa, @{ Name = 'IpAddress'; Prompt = '許可する IP アドレス（範囲）'; Required = $true }) },
     @{ Label = 'Show-Storage           : 状態を表示（読み取り専用）'; Script = 'Show-Storage.ps1'; Danger = $false
-       Params = @($rg, $sa) }
+       Params = @($rg, $sa) },
+    @{ Label = 'Remove-StorageAccount  : ストレージアカウントを削除'; Script = 'Remove-StorageAccount.ps1'; Danger = $true; Destroy = $true
+       Params = @($rg, @{ Name = 'StorageAccountName'; Prompt = '削除するストレージアカウント名'; Required = $true },
+            @{ Name = 'RemoveResourceGroup'; Prompt = 'リソースグループごと削除する'; Kind = 'Switch'; Default = $false }) }
 )
 
 Start-ToolMenu -Title 'Storage 対話メニュー (Azure PowerShell)' -Commands $commands -ToolDir $PSScriptRoot

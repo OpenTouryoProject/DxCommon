@@ -26,6 +26,11 @@ $noShut = @{ Name = 'NoAutoShutdown'; Prompt = '自動シャットダウンを�
 $cred = '管理者のユーザー名・パスワードは、実行時に入力を求められる。'
 
 $commands = @(
+    @{ Label = 'Test-Prerequisites : 前提（モジュール / ログイン / プロバイダー）を確認（読み取り専用）'; Script = 'Test-Prerequisites.ps1'; Danger = $false
+       Params = @() },
+    @{ Label = 'Test-Prerequisites -Register : 未登録のリソースプロバイダーを登録'; Script = 'Test-Prerequisites.ps1'; Danger = $true
+       Note = 'サブスクリプションにリソースプロバイダーを登録する（無料・取り消し可能）。'
+       Params = @(@{ Name = 'Register'; Prompt = '未登録のプロバイダーを登録する'; Kind = 'Switch'; Default = $true }) },
     @{ Label = 'New-Bastion      : Bastion（RG / VNet / Public IP / Bastion / Jumpbox サブネット）を作成'; Script = 'New-Bastion.ps1'; Danger = $true
        Note = 'Bastion は作成に 10 分前後かかり、課金される。'
        Params = @($loc,
@@ -46,7 +51,16 @@ $commands = @(
     @{ Label = 'Show-Simplest    : 構成の状態を表示（読み取り専用）'; Script = 'Show-Simplest.ps1'; Danger = $false
        Params = @(
             @{ Name = 'BastionResourceGroupName'; Prompt = 'Bastion 側リソースグループ'; Default = 'AzureBastionRG' },
-            @{ Name = 'SandboxResourceGroupName'; Prompt = 'サンドボックス側リソースグループ'; Default = 'YourRG' }) }
+            @{ Name = 'SandboxResourceGroupName'; Prompt = 'サンドボックス側リソースグループ'; Default = 'YourRG' }) },
+    @{ Label = 'Set-VMPower      : VM を起動 / 停止（割り当て解除）/ 再起動'; Script = 'Set-VMPower.ps1'; Danger = $true
+       Note = '課金を止めるには Stop（割り当て解除）を使う。'
+       Params = @(
+            @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'YourRG' },
+            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'YourVM1' },
+            @{ Name = 'Action'; Prompt = '操作'; Kind = 'Choice'; Choices = @('Start', 'Stop', 'Restart'); Default = 'Stop' }) },
+    @{ Label = 'Remove-Simplest  : リソースグループを中身ごと削除（Bastion / サンドボックス）'; Script = 'Remove-Simplest.ps1'; Danger = $true; Destroy = $true
+       Note = 'Bastion や VM の課金を止めたいときの片付け。'
+       Params = @(@{ Name = 'ResourceGroupName'; Prompt = '削除するリソースグループ'; Required = $true }) }
 )
 
 Start-ToolMenu -Title 'Simplest 対話メニュー (Azure PowerShell)' -Commands $commands -ToolDir $PSScriptRoot
