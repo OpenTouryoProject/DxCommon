@@ -1,0 +1,52 @@
+﻿<#
+.SYNOPSIS
+    Simplest の各 Tool を対話形式で実行するメニュー。
+
+.DESCRIPTION
+    次の流れで、同フォルダの各 *.ps1 を組み立てて実行する。
+      1. コマンド選択   : 実行するスクリプトを選ぶ。
+      2. オプション選択 : スクリプトのパラメータを入力する（Enter で既定値）。
+      3. 確認           : 実行するコマンドラインを表示する。
+      4. GO / NOGO      : GO と入力したときだけ実行する（読み取り専用の Show は Enter で実行）。
+    実行後はコマンド選択へ戻る。途中で q を入力すると終了する（b で 1 つ前へ戻る）。
+    事前に Connect-AzAccount でログインしておくこと。
+
+.EXAMPLE
+    .\Invoke-SimplestMenu.ps1
+#>
+[CmdletBinding()]
+param()
+$ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'Simplest.Common.ps1')
+
+$loc = @{ Name = 'Location'; Prompt = 'リージョン'; Default = $DefaultLocation }
+$size = @{ Name = 'VmSize'; Prompt = 'VM サイズ'; Default = $DefaultVmSize }
+$os = @{ Name = 'OS'; Prompt = 'OS イメージ'; Kind = 'Choice'; Choices = @($VmImages.Keys); Default = $DefaultOS }
+$noShut = @{ Name = 'NoAutoShutdown'; Prompt = '自動シャットダウンを設定しない'; Kind = 'Switch'; Default = $false }
+$cred = '管理者のユーザー名・パスワードは、実行時に入力を求められる。'
+
+$commands = @(
+    @{ Label = 'New-Bastion      : Bastion（RG / VNet / Public IP / Bastion / Jumpbox サブネット）を作成'; Script = 'New-Bastion.ps1'; Danger = $true
+       Note = 'Bastion は作成に 10 分前後かかり、課金される。'
+       Params = @($loc,
+            @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'AzureBastionRG' },
+            @{ Name = 'VnetName'; Prompt = 'VNet 名'; Default = 'AzureBastionVnet' }) },
+    @{ Label = 'New-JumpboxVM    : Jumpbox VM を作成（パブリック IP なし）'; Script = 'New-JumpboxVM.ps1'; Danger = $true; Note = $cred
+       Params = @($loc,
+            @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'AzureBastionRG' },
+            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'JumpboxVM1' }, $size, $os, $noShut) },
+    @{ Label = 'New-Sandbox      : サンドボックス（RG / VNet / VM）を作成'; Script = 'New-Sandbox.ps1'; Danger = $true; Note = $cred
+       Params = @($loc,
+            @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'YourRG' },
+            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'YourVM1' }, $size, $os, $noShut) },
+    @{ Label = 'New-VnetPeering  : Bastion VNet とサンドボックス VNet をピアリング'; Script = 'New-VnetPeering.ps1'; Danger = $true
+       Params = @(
+            @{ Name = 'BastionResourceGroupName'; Prompt = 'Bastion 側リソースグループ'; Default = 'AzureBastionRG' },
+            @{ Name = 'SandboxResourceGroupName'; Prompt = 'サンドボックス側リソースグループ'; Default = 'YourRG' }) },
+    @{ Label = 'Show-Simplest    : 構成の状態を表示（読み取り専用）'; Script = 'Show-Simplest.ps1'; Danger = $false
+       Params = @(
+            @{ Name = 'BastionResourceGroupName'; Prompt = 'Bastion 側リソースグループ'; Default = 'AzureBastionRG' },
+            @{ Name = 'SandboxResourceGroupName'; Prompt = 'サンドボックス側リソースグループ'; Default = 'YourRG' }) }
+)
+
+Start-ToolMenu -Title 'Simplest 対話メニュー (Azure PowerShell)' -Commands $commands -ToolDir $PSScriptRoot
