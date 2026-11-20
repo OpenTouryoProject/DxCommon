@@ -117,6 +117,25 @@ function Format-CommandLine([string]$ScriptName, [hashtable]$Named) {
     return ($parts -join ' ')
 }
 
+# よくある失敗の原因と対処を案内する（メニューの実行エラー時に呼ぶ）。
+function Show-ErrorHint([string]$Message) {
+    if ($Message -match 'MFA|multi-factor|multifactor|ClaimsChallenge|AADSTS50076|AADSTS50079') {
+        $tenant = (Get-AzContext).Tenant.Id
+        Say '  [ヒント] 作成・変更・削除に、MFA が必要なテナントのようです。MFA を通して再ログインしてください:' -Color Yellow
+        Say ("    Connect-AzAccount -Tenant {0}" -f $tenant) -Color White
+        Say '    （エラーに ClaimsChallenge が示されていれば、そのコマンドをそのまま実行する）' -Color DarkGray
+    }
+    elseif ($Message -match 'NotFound|MissingSubscriptionRegistration|not registered|NoRegisteredProviderFound') {
+        Say '  [ヒント] リソースプロバイダーが未登録の可能性があります。Test-Prerequisites を実行し、-Register で登録してください。' -Color Yellow
+    }
+    elseif ($Message -match 'AuthorizationFailed|does not have authorization|403|Forbidden|accessDenied') {
+        Say '  [ヒント] 権限が不足しています。対象のスコープで、必要なロール（所有者など）が付与されているか確認してください。' -Color Yellow
+    }
+    elseif ($Message -match 'AlreadyExists|already exists|StorageAccountAlreadyTaken|already taken') {
+        Say '  [ヒント] 同じ名前が既に使われています。ストレージアカウント名などはグローバルで一意である必要があります。名前を変えてください。' -Color Yellow
+    }
+}
+
 # 対話メニュー本体。
 #   Commands: @{ Label; Script; Params = @(Spec...); Note; Danger = $true/$false }
 function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
@@ -171,6 +190,7 @@ function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
             }
             catch {
                 Say ("--- 実行エラー: {0}" -f $_.Exception.Message) -Color Red
+                Show-ErrorHint $_.Exception.Message
             }
 
             Say ''
