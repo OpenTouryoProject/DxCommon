@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    AzureIaC の各 Tool（Simplest / SingleVM / Storage / AddUsers / Monitor）の対話メニューを選んで起動する。
+    AzureIaC の各 Tool（Simplest / SingleVM / Storage / AddUsers / Monitor / Protection）の対話メニューを選んで起動する。
 
 .DESCRIPTION
     各フォルダの Tool\Invoke-*Menu.ps1 を、1 つ選んで実行する。メニューを終了（q）すると、ここへ戻る。
@@ -30,7 +30,8 @@ $tools = @(
     @{ Label = 'SingleVM : 単体 VM（Windows / Linux）';                           Menu = 'SingleVM\Tool\Invoke-SingleVMMenu.ps1' },
     @{ Label = 'Storage  : ストレージアカウント + コンテナ';                       Menu = 'Storage\Tool\Invoke-StorageMenu.ps1' },
     @{ Label = 'AddUsers : ユーザー追加（カスタムロール / ユーザー / ロール付与）'; Menu = 'AddUsers\Tool\Invoke-AddUsersMenu.ps1' },
-    @{ Label = 'Monitor  : セキュリティ（インバウンド）/ 課金の監視（読み取り専用）'; Menu = 'Monitor\Tool\Invoke-MonitorMenu.ps1' }
+    @{ Label = 'Monitor  : セキュリティ（インバウンド）/ 課金の監視（読み取り専用）'; Menu = 'Monitor\Tool\Invoke-MonitorMenu.ps1' },
+    @{ Label = 'Protection: リソースグループのロック（CanNotDelete / ReadOnly）'; Menu = 'Protection\Tool\Invoke-ProtectionMenu.ps1' }
 )
 
 Say '==== AzureIaC 対話メニュー (Azure PowerShell) ====' -Color Green

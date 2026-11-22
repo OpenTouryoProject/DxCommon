@@ -60,3 +60,6 @@ az storage account network-rule list --account-name $storageAccountName
 ### Reference
 - Azureのストレージ - マイクロソフト系技術情報 Wiki > IaC化  
 https://techinfoofmicrosofttech.osscons.jp/index.php?Azure%E3%81%AE%E3%82%B9%E3%83%88%E3%83%AC%E3%83%BC%E3%82%B8#ea519673
+
+### 調査メモ
+Tool 作成・実機確認で分かったことは、[Notes.md](./Notes.md) にまとめた。

@@ -18,7 +18,7 @@ param(
     [string]$SubnetName = 'YourSubnet',
     [string]$VmName = 'YourVM1',
     [string]$VmSize = 'Standard_D4s_v3',
-    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
+    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Win2025Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
     [string]$AutoShutdownTime = '1500',

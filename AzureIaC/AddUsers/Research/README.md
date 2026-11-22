@@ -165,3 +165,6 @@ az vm auto-shutdown --resource-group $yourRgName --name $vmName --time 1500
 ```
 
 I also confirmed that I can create a VM using My Disk.
+
+### 調査メモ
+Tool 作成・実機確認で分かったことは、[Notes.md](./Notes.md) にまとめた。

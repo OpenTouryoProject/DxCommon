@@ -8,7 +8,7 @@
     管理者のユーザー名とパスワードは、実行時に Get-Credential で入力する（-Credential でも渡せる）。
 
 .PARAMETER OS
-    Win2019Datacenter / Win2022Datacenter / Ubuntu2604 / Ubuntu2404 / Ubuntu2204
+    Win2019Datacenter / Win2022Datacenter / Win2025Datacenter / Ubuntu2604 / Ubuntu2404 / Ubuntu2204
 
 .PARAMETER SshKeyPath
     Linux 用の秘密鍵のパス。既定: ~/.ssh/<VmName>。無ければ ssh-keygen で作成する（パスフレーズは対話入力）。
@@ -31,7 +31,7 @@ param(
     [string]$SubnetName = 'JumpboxSubnet',
     [string]$VmName = 'JumpboxVM1',
     [string]$VmSize = 'Standard_D4s_v3',
-    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
+    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Win2025Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
     [string]$AutoShutdownTime = '1500',

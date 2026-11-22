@@ -12,6 +12,7 @@ Azure の IaC で構築する、共通基盤相当のもの。
 | Simplest | [Research](./Simplest/Research/README.md) | [Tool](./Simplest/Tool/README.md) |
 | AddUsers | [Research](./AddUsers/Research/README.md) | [Tool](./AddUsers/Tool/README.md) |
 | Monitor | [Research](./Monitor/Research/README.md) | [Tool](./Monitor/Tool/README.md)（セキュリティ / 課金の監視。読み取り専用） |
+| Protection | [Research](./Protection/Research/README.md) | [Tool](./Protection/Tool/README.md)（リソースグループのロック。CanNotDelete / ReadOnly） |
 
 ## クイックスタート（Tool）
 1. Azure PowerShell でサインインする。テナントが MFA 必須の場合は、MFA を通してサインインする。

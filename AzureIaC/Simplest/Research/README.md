@@ -217,3 +217,6 @@ az network vnet peering show \
   --vnet-name $yourVnetName \
   --query peeringState
 ```
+
+### 調査メモ
+Tool 作成・実機確認で分かったことは、[Notes.md](./Notes.md) にまとめた。

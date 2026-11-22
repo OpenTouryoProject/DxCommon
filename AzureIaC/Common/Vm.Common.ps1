@@ -4,6 +4,7 @@
 # az の --image 別名に相当する、マーケットプレースイメージの定義。
 $VmImages = [ordered]@{
     'Win2019Datacenter' = @{ Publisher = 'MicrosoftWindowsServer'; Offer = 'WindowsServer'; Sku = '2019-Datacenter'; IsLinux = $false }
+    'Win2025Datacenter' = @{ Publisher = 'MicrosoftWindowsServer'; Offer = 'WindowsServer'; Sku = '2025-datacenter'; IsLinux = $false }
     'Win2022Datacenter' = @{ Publisher = 'MicrosoftWindowsServer'; Offer = 'WindowsServer'; Sku = '2022-Datacenter'; IsLinux = $false }
     'Ubuntu2604'        = @{ Publisher = 'Canonical'; Offer = 'ubuntu-26_04-lts'; Sku = 'server'; IsLinux = $true }
     'Ubuntu2404'        = @{ Publisher = 'Canonical'; Offer = 'ubuntu-24_04-lts'; Sku = 'server'; IsLinux = $true }
@@ -95,19 +96,78 @@ function Set-LinuxUserPassword([string]$ResourceGroupName, [string]$VmName, [psc
         -TypeHandlerVersion '1.5' -ProtectedSettings $prot -ForceRerun ([guid]::NewGuid().ToString())
 }
 
+# VM の 1 つ目の NIC を返す。
+function Get-VmNic($Vm) {
+    $r = Split-ResourceId $Vm.NetworkProfile.NetworkInterfaces[0].Id
+    return (Get-AzNetworkInterface -ResourceGroupName $r.ResourceGroupName -Name $r.Name)
+}
+
+# VM が Linux かどうか。
+function Test-VmIsLinux($Vm) { return ($Vm.StorageProfile.OsDisk.OsType -eq 'Linux') }
+
+# VM の中でスクリプトを実行する（Run Command）。戻り値: 出力の文字列。-WhatIf の影響は受けない。
+function Invoke-VmCommand([string]$ResourceGroupName, [string]$VmName, [string]$CommandId, [string]$Script) {
+    $r = Invoke-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName $VmName -CommandId $CommandId -ScriptString $Script -WhatIf:$false
+    return (($r.Value | ForEach-Object { $_.Message }) -join "`n")
+}
+
+# VM の中から、インターネットに出られるかを確認する。
+function Test-VmOutbound([string]$ResourceGroupName, [string]$VmName, [bool]$OsIsLinux) {
+    if ($osIsLinux) {
+        $cmd = 'RunShellScript'
+        $probe = '(timeout 8 bash -c "echo > /dev/tcp/azure.archive.ubuntu.com/80" && echo outbound-ok) 2>&1 || echo outbound-fail'
+    }
+    else {
+        $cmd = 'RunPowerShellScript'
+        $probe = 'try { $null = Invoke-WebRequest -UseBasicParsing -Uri http://www.msftconnecttest.com/connecttest.txt -TimeoutSec 8; "outbound-ok" } catch { "outbound-fail" }'
+    }
+    return ((Invoke-VmCommand $ResourceGroupName $VmName $cmd $probe) -match 'outbound-ok')
+}
+
+# VM がインターネットに出られないとき（プライベート サブネット。既定のアウトバウンドが無効）は、
+# 一時的な Public IP を付けて、-Action を実行し、終わったら（失敗しても）外して削除する。
+# 出られるときは、そのまま -Action を実行する。-Disable を付けると、一時 Public IP を付けず、出られなければ例外にする。
+# Standard の Public IP は、NSG で許可しない限り、受信できない（NSG が無い NIC でも同じ）。
+function Invoke-WithTempPublicIp([string]$ResourceGroupName, [string]$VmName, [scriptblock]$Action, [switch]$Disable) {
+    $vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VmName
+    $osIsLinux = Test-VmIsLinux $vm
+    $tempPip = $null
+    try {
+        if (Test-VmOutbound $ResourceGroupName $VmName $osIsLinux) {
+            Say '  インターネットに出られます。' -Color DarkGray
+        }
+        else {
+            if ($Disable) { throw "VM '$VmName' はインターネットに出られません（一時的な Public IP を付けない指定のため、止めます）。" }
+            $nic = Get-VmNic $vm
+            if ($nic.IpConfigurations[0].PublicIpAddress.Id) {
+                throw "VM '$VmName' は Public IP が付いていますが、インターネットに出られません。NSG などを確認してください。"
+            }
+            $name = "$VmName-tmp-pip"
+            Say "  インターネットに出られません。一時的な Public IP '$name' を付けます（終わったら削除します）" -Color Cyan
+            $tempPip = New-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name $name -Location $vm.Location -Sku Standard -AllocationMethod Static
+            $nic.IpConfigurations[0].PublicIpAddress = $tempPip
+            $null = Set-AzNetworkInterface -NetworkInterface $nic
+            if (-not (Test-VmOutbound $ResourceGroupName $VmName $osIsLinux)) { throw '一時的な Public IP を付けても、インターネットに出られません。' }
+        }
+        & $Action
+    }
+    finally {
+        if ($tempPip) {
+            Say "  一時的な Public IP '$($tempPip.Name)' を外して削除します" -Color Cyan
+            $nic = Get-VmNic (Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VmName)
+            $nic.IpConfigurations[0].PublicIpAddress = $null
+            $null = Set-AzNetworkInterface -NetworkInterface $nic
+            $null = Remove-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name $tempPip.Name -Force
+        }
+    }
+}
+
 # Linux VM に、デスクトップ環境（xfce4）と xrdp を入れる（Run Command で実行。数分かかる）。
+# インターネットに出られない VM には、一時的な Public IP を付けて、終わったら削除する（-NoTempPublicIp で、付けずに止まる）。
 # 3389 の受信は開けない。必要なら NSG などで、接続元を絞って開けること。
-function Install-Xrdp([string]$ResourceGroupName, [string]$VmName, [pscredential]$Credential) {
+function Install-Xrdp([string]$ResourceGroupName, [string]$VmName, [pscredential]$Credential, [switch]$NoTempPublicIp) {
     $UserName = $Credential.UserName
     Set-LinuxUserPassword $ResourceGroupName $VmName $Credential
-    # 外向き通信の確認（新しい VNet のサブネットは、既定の外向き通信が無効。パブリック IP も NAT Gateway も無いと apt が使えない）
-    $t = Invoke-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName $VmName -CommandId 'RunShellScript' `
-        -ScriptString '(timeout 8 bash -c "echo > /dev/tcp/azure.archive.ubuntu.com/80" && echo outbound-ok) 2>&1 || echo outbound-fail'
-    if (($t.Value | ForEach-Object { $_.Message }) -join '' -notmatch 'outbound-ok') {
-        throw ("VM '{0}' から、インターネット（Ubuntu のパッケージ ミラー）に出られません。" -f $VmName) +
-            "`n  対処: NIC に一時的な Public IP を付けて再実行し、終わったら外して削除する（または、サブネットに NAT Gateway を付ける）。"
-    }
-    Say "  VM '$VmName' に xfce4 と xrdp をインストールします（数分かかります）" -Color Cyan
     $script = @'
 set -e
 export DEBIAN_FRONTEND=noninteractive
@@ -121,9 +181,10 @@ systemctl enable xrdp
 systemctl restart xrdp
 echo xrdp-installed
 '@.Replace('__USER__', $UserName).Replace("`r`n", "`n")
-    $r = Invoke-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName $VmName `
-        -CommandId 'RunShellScript' -ScriptString $script
-    $out = ($r.Value | ForEach-Object { $_.Message }) -join "`n"
-    if ($out -notmatch 'xrdp-installed') { throw "xrdp のインストールに失敗した可能性があります:`n$out" }
+    Invoke-WithTempPublicIp $ResourceGroupName $VmName -Disable:$NoTempPublicIp -Action {
+        Say "  VM '$VmName' に xfce4 と xrdp をインストールします（数分かかります）" -Color Cyan
+        $out = Invoke-VmCommand $ResourceGroupName $VmName 'RunShellScript' $script
+        if ($out -notmatch 'xrdp-installed') { throw "xrdp のインストールに失敗した可能性があります:`n$out" }
+    }
     Say "  xrdp をインストールしました。ログインには、この VM の管理者ユーザーとパスワードを使います（SSH は鍵のみ）。" -Color DarkGray
 }

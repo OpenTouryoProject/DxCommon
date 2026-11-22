@@ -12,7 +12,7 @@
     リソースグループは、無ければ作成する。VM の作成には数分かかり、課金される。
 
 .PARAMETER OS
-    Win2019Datacenter / Win2022Datacenter / Ubuntu2604 / Ubuntu2404 / Ubuntu2204
+    Win2019Datacenter / Win2022Datacenter / Win2025Datacenter / Ubuntu2604 / Ubuntu2404 / Ubuntu2204
 
 .PARAMETER SshKeyPath
     Linux 用の秘密鍵のパス。既定: ~/.ssh/<VmName>。公開鍵は <SshKeyPath>.pub。
@@ -36,7 +36,7 @@ param(
     [string]$ResourceGroupName = 'hogeRG',
     [string]$VmName = 'hogeVM',
     [string]$VmSize = 'Standard_D4s_v3',
-    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
+    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Win2025Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
     [string]$SshKeyPath,

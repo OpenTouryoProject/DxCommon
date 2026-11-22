@@ -155,3 +155,15 @@ $r = Invoke-AzRestMethod -Method POST -Path $path -Payload $json
 - Cost Management Forecast: https://learn.microsoft.com/rest/api/cost-management/forecast/usage
 - Budgets: https://learn.microsoft.com/rest/api/consumption/budgets
 - NSG のセキュリティルール: https://learn.microsoft.com/azure/virtual-network/network-security-groups-overview
+
+## 実機で確認したこと（2026-11-22）
+- `Show-InboundSecurity`: NSG とパブリック IP が 0 件でも、ストレージは [注意] が出る。VM を作ると、起動診断用のストレージ（`azureazure...`）が自動で作られ、最小 TLS が TLS 1.0 のため、これも出る。TLS を上げる手順は [Storage の調査メモ](../../Storage/Research/Notes.md)。
+- `Show-Billing`: 先月 586 JPY、当月は実績 369 JPY・月末予測 551 JPY（Azure の予測 API）。内訳はほぼ「Virtual Network」（Bastion / Public IP の残りと思われる）で、予算（Budget）は未設定だった。
+- 新しい VNet のサブネットは、既定の外向き通信が無効。Public IP も NAT Gateway も無い VM は、インターネットに出られない（[Simplest の調査メモ](../../Simplest/Research/Notes.md)）。
+- Bastion の SKU と、OS 別の接続方法の対応表は、[Simplest の調査メモ](../../Simplest/Research/Notes.md)。
+
+## 実機で確認したこと（2026-11-23）
+
+- `Show-InboundSecurity` は、Public IP が付いた VM（`WorkVM2`）で、次のように出る: NSG の受信許可 1 件（自分の IP のみ）、NSG の関連付けは「適用中」（NIC）、Public IP は Standard / 静的 / 割り当て先は NIC。送信元が全許可でなければ、[危険] [注意] は出ない。
+- 3389 の到達確認は、`Test-NetConnection <IP> -Port 3389`（自分の IP からのみ `True`）。他の IP からは届かないことは、未確認。
+- 自分の IP が変わったときは、`SingleVM/Tool/Update-VMAllowedIp.ps1 -MyIp` で、許可元を付け替える。Monitor に、現在の自分の IP と許可元が一致しているかの確認は、まだ無い。

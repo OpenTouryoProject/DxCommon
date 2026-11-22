@@ -212,12 +212,6 @@ function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
 # VM 関連の共通部品（Simplest / SingleVM で共有。AzureIaC\Common\Vm.Common.ps1）
 . (Join-Path $PSScriptRoot '..\..\Common\Vm.Common.ps1')
 
-# VM の 1 つ目の NIC を返す。
-function Get-VmNic($Vm) {
-    $r = Split-ResourceId $Vm.NetworkProfile.NetworkInterfaces[0].Id
-    return (Get-AzNetworkInterface -ResourceGroupName $r.ResourceGroupName -Name $r.Name)
-}
-
 # VM のパブリック IP アドレス（なければ $null）。
 function Get-VmPublicIp($Vm) {
     $nic = Get-VmNic $Vm
@@ -226,9 +220,6 @@ function Get-VmPublicIp($Vm) {
     $r = Split-ResourceId $pipId
     return (Get-AzPublicIpAddress -ResourceGroupName $r.ResourceGroupName -Name $r.Name).IpAddress
 }
-
-# VM が Linux かどうか。
-function Test-VmIsLinux($Vm) { return ($Vm.StorageProfile.OsDisk.OsType -eq 'Linux') }
 
 # VM の 1 つ目の NIC に付いた NSG を返す（無ければ例外）。
 function Get-VmNsg($Vm) {
@@ -243,6 +234,26 @@ function Get-MyPublicIp {
     $ip = (Invoke-RestMethod -Uri 'https://api.ipify.org' -TimeoutSec 15).ToString().Trim()
     if ($ip -notmatch '^\d{1,3}(\.\d{1,3}){3}$') { throw "自分の IP を取得できませんでした: $ip" }
     return $ip
+}
+
+# VM の Public IP に、DNS 名（<ラベル>.<リージョン>.cloudapp.azure.com）を付けて、FQDN を返す。既にあればそれを返す。
+# Entra ID の RDP ログイン（Web アカウント）は、接続先に IP アドレスを使えず、FQDN が必要。
+function Set-VmPublicDnsLabel($Vm, [string]$Label) {
+    $nic = Get-VmNic $Vm
+    $pipId = $nic.IpConfigurations[0].PublicIpAddress.Id
+    if (-not $pipId) { throw "VM '$($Vm.Name)' には Public IP がありません。" }
+    $r = Split-ResourceId $pipId
+    $pip = Get-AzPublicIpAddress -ResourceGroupName $r.ResourceGroupName -Name $r.Name
+    if ($pip.DnsSettings.Fqdn) { return $pip.DnsSettings.Fqdn }
+    if (-not $Label) {
+        $suffix = -join ((1..6) | ForEach-Object { 'abcdefghijklmnopqrstuvwxyz0123456789'[(Get-Random -Maximum 36)] })
+        $Label = ("{0}-{1}" -f $Vm.Name.ToLower(), $suffix)
+    }
+    Say "  Public IP '$($pip.Name)' に DNS 名 '$Label' を付けます" -Color Cyan
+    $pip.DnsSettings = New-Object Microsoft.Azure.Commands.Network.Models.PSPublicIpAddressDnsSettings
+    $pip.DnsSettings.DomainNameLabel = $Label
+    $null = Set-AzPublicIpAddress -PublicIpAddress $pip
+    return (Get-AzPublicIpAddress -ResourceGroupName $r.ResourceGroupName -Name $r.Name).DnsSettings.Fqdn
 }
 
 # 送信元の指定を決める。-MyIp なら自分の IP。-Required のとき、全許可（* / Internet / 0.0.0.0/0 など）は例外にする。

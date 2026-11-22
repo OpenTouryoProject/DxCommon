@@ -25,6 +25,10 @@
 | `Test-Prerequisites.ps1` | - | モジュール、サインイン、リソースプロバイダーを確認する |
 | `Show-VMCatalog.ps1` | Define2 | VM サイズ、または対応するイメージを一覧表示する |
 | `New-SingleVM.ps1` | `Windows.md` / `Linux.md` | RG、ネットワーク、VM を作成する。`-InstallXrdp` で Linux に xfce4 と xrdp も入れる |
+| `Add-VMPublicIp.ps1` | - | 既存 VM に Public IP（Standard / 静的）を付ける。NSG が無ければ作る。`-OpenPort 3389 -MyIp` で、自分の IP だけに開ける |
+| `Remove-VMPublicIp.ps1` | - | VM から Public IP を外して削除する |
+| `Disable-LocalLogin.ps1` | - | Windows VM のローカル管理者のログインを止める（Entra ID のみにする）。`DenyRdp`（RDP ログオン拒否）/ `DisableAccount`。`-Enable` で戻す。止める前に、締め出し防止のチェックをする |
+| `Set-VMLocale.ps1` | - | VM の言語・ロケール・タイムゾーンを設定する（既定: 日本語 / 東京。Windows と Ubuntu）。Run Command で行い、インターネットに出られない VM には、一時的な Public IP を付けて、終わったら削除する |
 | `Open-VMPort.ps1` | `az vm open-port` | VM の NSG に、受信を許可するルールを追加する。Windows VM と 3389 は、送信元の IP 制限が必須（`-SourceAddressPrefix` か `-MyIp`） |
 | `Update-VMAllowedIp.ps1` | - | 自分の IP が変わったとき、開けてあるポートの許可元の IP を付け替える（`-MyIp`） |
 | `Enable-EntraLogin.ps1` | - | Windows VM に、Entra ID での RDP ログインを設定する（マネージド ID・拡張機能 `AADLoginForWindows`・ロール割り当て・`.rdp` 出力） |
@@ -44,5 +48,5 @@
 - `Enable-EntraLogin.ps1` を使っても、VM ローカルの管理者パスワードでのログインは残る。MFA を求めたい場合は、条件付きアクセスで「Azure Windows VM Sign-In」に MFA を要求する。
   `.rdp` の項目（`enablerdsaadauth` / `targetisaadjoined`）は、実機での確認はこれから。つながらない場合は、ユーザー名を `AzureAD\<UPN>` にしてパスワードで入る。
 - `Remove-SingleVM.ps1` は、他と共有している可能性があるため、名前が VM 名で始まる NIC・Public IP・NSG・VNet だけを削除する。
-- 使えるイメージ: `Win2019Datacenter`、`Win2022Datacenter`、`Ubuntu2604`（Ubuntu 26.04 LTS）、`Ubuntu2404`、`Ubuntu2204`。
+- 使えるイメージ: `Win2019Datacenter`、`Win2022Datacenter`、`Win2025Datacenter`、`Ubuntu2604`（Ubuntu 26.04 LTS）、`Ubuntu2404`、`Ubuntu2204`。
 - Linux の xrdp は `-InstallXrdp` で入れられる（3389 は開かないので、`Open-VMPort.ps1` で接続元を絞って開ける）。ロケールやブラウザは、今のところ手作業。[Linux.md](../Research/Linux.md) を参照。

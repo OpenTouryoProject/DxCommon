@@ -41,4 +41,4 @@ Azure Bastion、Jumpbox VM、サンドボックス VM、およびその間の VN
 - 自動シャットダウンの既定は `1500`（UTC）= JST 0 時。設定しない場合は `-NoAutoShutdown` を付ける。
 - Bastion の SKU: `Developer` は無料（開発・テスト向け。共有インフラを使うので専用サブネットも Public IP も不要。同時接続は 1 つで、VNet ピアリング越しの接続などに制限がある。
   Az の `New-AzBastion` が未対応のため REST で作る）。`Basic` / `Standard` は、存在する間ずっと課金される（作成に 10 分前後かかる）。不要になったら `Remove-Simplest.ps1` で削除する。
-- 使えるイメージ: `Win2019Datacenter`、`Win2022Datacenter`、`Ubuntu2604`（Ubuntu 26.04 LTS）、`Ubuntu2404`、`Ubuntu2204`。
+- 使えるイメージ: `Win2019Datacenter`、`Win2022Datacenter`、`Win2025Datacenter`、`Ubuntu2604`（Ubuntu 26.04 LTS）、`Ubuntu2404`、`Ubuntu2204`。

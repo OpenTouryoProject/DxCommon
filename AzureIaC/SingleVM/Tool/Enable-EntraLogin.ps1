@@ -15,6 +15,8 @@
 
     ※ 手元の PC が Entra 参加していなくても接続できるよう、.rdp には targetisaadjoined / enablerdsaadauth を入れる。
       つながらないときは、ユーザー名を AzureAD\<UPN> の形にして、パスワード入力でログインする。
+      Web アカウントでのサインインは、接続先に IP アドレスを使えず、Entra ID のデバイス名（コンピューター名）と一致する名前が必要。
+      そのため .rdp にはコンピューター名を書く。手元の PC の hosts に、<IP> <コンピューター名> の行を足して、名前解決させる。
     ※ MFA を求めたい場合は、条件付きアクセスで「Azure Windows VM Sign-In」アプリに MFA を要求する。
 
 .PARAMETER UserPrincipalName
@@ -88,9 +90,13 @@ if ($UserPrincipalName) {
 
 # 4. .rdp ファイル
 $ip = Get-VmPublicIp $vmObj
+$hostName = $null
 if ($RdpFilePath) {
     if (-not $ip) { throw 'この VM にはパブリック IP がありません。.rdp を書き出せません。' }
-    $lines = @("full address:s:$ip", 'prompt for credentials:i:1', 'enablerdsaadauth:i:1', 'targetisaadjoined:i:1')
+    # Web アカウントでのサインインは、接続先に IP アドレスを使えず、Entra ID のデバイス名（コンピューター名）と一致する名前が必要。
+    # （FQDN や、Public IP の DNS 名は、デバイスが見つからず AADSTS293004 になる）。名前を IP に解決できるよう、手元の PC の hosts に足す。
+    $hostName = $vmObj.OSProfile.ComputerName
+    $lines = @("full address:s:$hostName", 'prompt for credentials:i:1', 'enablerdsaadauth:i:1', 'targetisaadjoined:i:1')
     if ($upn) { $lines += "username:s:AzureAD\$upn" }
     Set-Content -Path $RdpFilePath -Value $lines -Encoding ASCII
     Say "  .rdp ファイルを書き出しました: $RdpFilePath" -Color DarkGray
@@ -100,4 +106,9 @@ Say ''
 Say "完了: VM '$VmName' で、Entra ID のログインを使えるようにしました。" -Color Green
 Say '  - ロールの反映に数分かかることがあります。' -Color DarkGray
 Say '  - 3389 は、Open-VMPort.ps1 -MyIp などで、自分の IP を絞って開けてください。' -Color DarkGray
-if ($ip) { Say "  - 接続先: $ip" -Color DarkGray }
+if ($hostName) {
+    Say "  - 接続先: $hostName（Entra ID のデバイス名。IP や FQDN は使えません）" -Color DarkGray
+    Say "  - 手元の PC で、管理者権限の PowerShell から、次を 1 回実行してください（hosts に名前解決を足す）:" -Color Yellow
+    Say ('      Add-Content C:\Windows\System32\drivers\etc\hosts "{0} {1}"' -f $ip, $hostName) -Color White
+}
+elseif ($ip) { Say "  - 接続先: $ip" -Color DarkGray }
