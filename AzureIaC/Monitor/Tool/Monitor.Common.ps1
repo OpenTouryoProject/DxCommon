@@ -217,13 +217,20 @@ function Confirm-Action([string]$Message, [switch]$Force) {
 
 # リソースプロバイダーの登録状態を返す（未登録なら NotRegistered）。
 function Get-ProviderState([string]$Namespace) {
-    $p = Get-AzResourceProvider -ProviderNamespace $Namespace -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($p) { return [string]$p.RegistrationState } else { return 'NotRegistered' }
+    # 一時的な API エラーで「未登録」と誤判定しないよう、再試行する。取得できなければ Unknown を返す。
+    for ($try = 1; $try -le 3; $try++) {
+        try {
+            $p = Get-AzResourceProvider -ProviderNamespace $Namespace -ErrorAction Stop | Select-Object -First 1
+            if ($p) { return [string]$p.RegistrationState } else { return 'NotRegistered' }
+        }
+        catch { if ($try -lt 3) { Start-Sleep -Seconds 2 } }
+    }
+    return 'Unknown'
 }
 
 # 必要なリソースプロバイダーが未登録なら、分かりやすいメッセージで止める。
 function Assert-ResourceProviders([string[]]$Namespaces) {
-    $missing = @($Namespaces | Where-Object { (Get-ProviderState $_) -ne 'Registered' })
+    $missing = @($Namespaces | Where-Object { (Get-ProviderState $_) -eq 'NotRegistered' })
     if ($missing.Count -gt 0) {
         throw ("リソースプロバイダーが未登録です: {0}。.\Test-Prerequisites.ps1 -Register で登録してください。" -f ($missing -join ', '))
     }

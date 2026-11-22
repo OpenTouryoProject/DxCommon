@@ -17,6 +17,16 @@
 .PARAMETER SshKeyPath
     Linux 用の秘密鍵のパス。既定: ~/.ssh/<VmName>。公開鍵は <SshKeyPath>.pub。
 
+.PARAMETER InstallXrdp
+    Linux（Ubuntu2204）に、xfce4 と xrdp をインストールする（Run Command。数分かかる）。
+    3389 の受信は開けないので、必要なら Open-VMPort.ps1 で、接続元を絞って開ける。
+
+.PARAMETER SourceAddressPrefix
+    Windows の RDP(3389) を許可する送信元（IP / CIDR）。Windows では必須（* は拒否）。Linux の SSH(22) は、指定がなければ * 。
+
+.PARAMETER MyIp
+    自分の現在のグローバル IP を送信元にする（外部サービス api.ipify.org に問い合わせて調べる）。
+
 .EXAMPLE
     .\New-SingleVM.ps1 -ResourceGroupName hogeRG -VmName hogeVM -OS Ubuntu2204
 #>
@@ -29,7 +39,10 @@ param(
     [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2204')]
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
-    [string]$SshKeyPath
+    [string]$SshKeyPath,
+    [switch]$InstallXrdp,
+    [string]$SourceAddressPrefix,
+    [switch]$MyIp
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'SingleVM.Common.ps1')
@@ -37,33 +50,20 @@ $null = Assert-AzLogin
 Assert-ResourceProviders $RequiredProviders
 
 $img = Get-VmImageSpec $OS
+# 送信元の IP 制限（Windows の RDP は必須）。VM やネットワークを作る前に確認する。
+$srcPrefix = Resolve-SourcePrefix $SourceAddressPrefix -MyIp:$MyIp -Required:(-not $img.IsLinux)
 $cred = Get-CredentialIfNull $Credential "VM '$VmName' の管理者ユーザー名とパスワード"
 
+if ($InstallXrdp -and -not $img.IsLinux) { throw '-InstallXrdp は Linux（Ubuntu2204）でのみ使えます。' }
+
 # Linux: SSH 鍵を用意する
-$pubKey = $null
-if ($img.IsLinux) {
-    if (-not $SshKeyPath) { $SshKeyPath = Join-Path $HOME ".ssh\$VmName" }
-    if (-not (Test-Path "$SshKeyPath.pub")) {
-        Say "  SSH 鍵を作成します: $SshKeyPath（パスフレーズを聞かれます）" -Color Cyan
-        $null = New-Item -ItemType Directory -Force -Path (Split-Path $SshKeyPath)
-        & ssh-keygen -m PEM -t rsa -b 4096 -f $SshKeyPath
-        if ($LASTEXITCODE -ne 0 -or -not (Test-Path "$SshKeyPath.pub")) { throw 'ssh-keygen に失敗しました。' }
-    }
-    else {
-        Say "  既存の SSH 鍵を使います: $SshKeyPath" -Color DarkGray
-    }
-    $pubKey = (Get-Content "$SshKeyPath.pub" -Raw).Trim()
-}
+$sshKey = if ($img.IsLinux) { New-LocalSshKey $VmName $SshKeyPath } else { $null }
+$pubKey = if ($sshKey) { $sshKey.PublicKey } else { $null }
+if ($sshKey) { $SshKeyPath = $sshKey.Path }
 
 Initialize-ResourceGroup $ResourceGroupName $Location
 
-if ($img.IsLinux) {
-    $keyName = "$VmName-sshkey"
-    if (-not (Get-AzSshKey -ResourceGroupName $ResourceGroupName -Name $keyName -ErrorAction SilentlyContinue)) {
-        Say "  SSH キー '$keyName' を登録します" -Color Cyan
-        $null = New-AzSshKey -ResourceGroupName $ResourceGroupName -Name $keyName -PublicKey $pubKey
-    }
-}
+if ($sshKey) { Register-VmSshKey $ResourceGroupName $VmName $pubKey }
 
 # ネットワーク（az vm create の自動作成に相当: <VmName>VNET / <VmName>Subnet / <VmName>PublicIP / <VmName>NSG）
 Say '  ネットワークを作成します' -Color Cyan
@@ -76,7 +76,7 @@ $pip = New-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name "${VmNa
 if ($img.IsLinux) { $rule = @{ Name = 'Allow-SSH'; Port = 22; Priority = 100 } }
 else { $rule = @{ Name = 'Allow-RDP'; Port = 3389; Priority = 100 } }
 $nsgRule = New-AzNetworkSecurityRuleConfig -Name $rule.Name -Protocol Tcp -Direction Inbound `
-    -Priority $rule.Priority -SourceAddressPrefix '*' -SourcePortRange '*' `
+    -Priority $rule.Priority -SourceAddressPrefix $srcPrefix -SourcePortRange '*' `
     -DestinationAddressPrefix '*' -DestinationPortRange $rule.Port -Access Allow
 $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroupName -Name "${VmName}NSG" `
     -Location $Location -SecurityRules $nsgRule
@@ -84,24 +84,16 @@ $nic = New-AzNetworkInterface -ResourceGroupName $ResourceGroupName -Name "${VmN
     -SubnetId $vnet.Subnets[0].Id -PublicIpAddressId $pip.Id -NetworkSecurityGroupId $nsg.Id
 
 # VM
-$cfg = New-AzVMConfig -VMName $VmName -VMSize $VmSize
-if ($img.IsLinux) {
-    $cfg = Set-AzVMOperatingSystem -VM $cfg -Linux -ComputerName $VmName -Credential $cred
-    $cfg = Add-AzVMSshPublicKey -VM $cfg -KeyData $pubKey -Path "/home/$($cred.UserName)/.ssh/authorized_keys"
-}
-else {
-    $computerName = $VmName.Substring(0, [Math]::Min(15, $VmName.Length))   # Windows は 15 文字まで
-    $cfg = Set-AzVMOperatingSystem -VM $cfg -Windows -ComputerName $computerName -Credential $cred `
-        -ProvisionVMAgent -EnableAutoUpdate
-}
-$cfg = Set-AzVMSourceImage -VM $cfg -PublisherName $img.Publisher -Offer $img.Offer -Skus $img.Sku -Version latest
-$cfg = Add-AzVMNetworkInterface -VM $cfg -Id $nic.Id
+$cfg = New-VmConfig $VmName $VmSize $img $cred $nic.Id $pubKey
 
 Say "  VM '$VmName' を作成します（数分かかります）" -Color Cyan
 $null = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $cfg
 
+if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred.UserName }
+
 $ip = (Get-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name $pip.Name).IpAddress
 Say ''
 Say "完了: VM '$VmName' を作成しました。パブリック IP: $ip" -Color Green
+if ($InstallXrdp) { Say '  xrdp: 3389 は開けていません。Open-VMPort.ps1 -Port 3389 -SourceAddressPrefix <自分の IP> で開けてから、mstsc で接続してください。' -Color Yellow }
 if ($img.IsLinux) { Say ("  接続: ssh -i `"{0}`" {1}@{2}" -f $SshKeyPath, $cred.UserName, $ip) -Color DarkGray }
 else { Say "  接続: mstsc /v:$ip" -Color DarkGray }

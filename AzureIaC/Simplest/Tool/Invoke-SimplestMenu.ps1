@@ -23,6 +23,7 @@ $loc = @{ Name = 'Location'; Prompt = 'リージョン'; Default = $DefaultLocat
 $size = @{ Name = 'VmSize'; Prompt = 'VM サイズ'; Default = $DefaultVmSize }
 $os = @{ Name = 'OS'; Prompt = 'OS イメージ'; Kind = 'Choice'; Choices = @($VmImages.Keys); Default = $DefaultOS }
 $noShut = @{ Name = 'NoAutoShutdown'; Prompt = '自動シャットダウンを設定しない'; Kind = 'Switch'; Default = $false }
+$xrdp = @{ Name = 'InstallXrdp'; Prompt = 'Linux に xfce4 と xrdp をインストールする（Ubuntu2204 のみ）'; Kind = 'Switch'; Default = $false }
 $cred = '管理者のユーザー名・パスワードは、実行時に入力を求められる。'
 
 $commands = @(
@@ -32,18 +33,19 @@ $commands = @(
        Note = 'サブスクリプションにリソースプロバイダーを登録する（無料・取り消し可能）。'
        Params = @(@{ Name = 'Register'; Prompt = '未登録のプロバイダーを登録する'; Kind = 'Switch'; Default = $true }) },
     @{ Label = 'New-Bastion      : Bastion（RG / VNet / Public IP / Bastion / Jumpbox サブネット）を作成'; Script = 'New-Bastion.ps1'; Danger = $true
-       Note = 'Bastion は作成に 10 分前後かかり、課金される。'
+       Note = 'Developer 以外は、作成に 10 分前後かかり、課金される（Developer は無料）。'
        Params = @($loc,
             @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'AzureBastionRG' },
-            @{ Name = 'VnetName'; Prompt = 'VNet 名'; Default = 'AzureBastionVnet' }) },
+            @{ Name = 'VnetName'; Prompt = 'VNet 名'; Default = 'AzureBastionVnet' },
+            @{ Name = 'BastionSku'; Prompt = 'Bastion の SKU（Developer: 無料・開発向け / Basic: 専用 / Standard: 機能が多く高価）'; Kind = 'Choice'; Choices = @('Developer', 'Basic', 'Standard'); Default = 'Developer' }) },
     @{ Label = 'New-JumpboxVM    : Jumpbox VM を作成（パブリック IP なし）'; Script = 'New-JumpboxVM.ps1'; Danger = $true; Note = $cred
        Params = @($loc,
             @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'AzureBastionRG' },
-            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'JumpboxVM1' }, $size, $os, $noShut) },
+            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'JumpboxVM1' }, $size, $os, $noShut, $xrdp) },
     @{ Label = 'New-Sandbox      : サンドボックス（RG / VNet / VM）を作成'; Script = 'New-Sandbox.ps1'; Danger = $true; Note = $cred
        Params = @($loc,
             @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'YourRG' },
-            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'YourVM1' }, $size, $os, $noShut) },
+            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'YourVM1' }, $size, $os, $noShut, $xrdp) },
     @{ Label = 'New-VnetPeering  : Bastion VNet とサンドボックス VNet をピアリング'; Script = 'New-VnetPeering.ps1'; Danger = $true
        Params = @(
             @{ Name = 'BastionResourceGroupName'; Prompt = 'Bastion 側リソースグループ'; Default = 'AzureBastionRG' },

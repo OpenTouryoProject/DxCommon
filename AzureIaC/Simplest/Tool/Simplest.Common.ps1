@@ -211,48 +211,14 @@ function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
 # 共通: VM 関連ヘルパ
 # ==============================================================================
 
-# az の --image 別名に相当する、マーケットプレースイメージの定義。
-$VmImages = [ordered]@{
-    'Win2019Datacenter' = @{ Publisher = 'MicrosoftWindowsServer'; Offer = 'WindowsServer'; Sku = '2019-Datacenter'; IsLinux = $false }
-    'Win2022Datacenter' = @{ Publisher = 'MicrosoftWindowsServer'; Offer = 'WindowsServer'; Sku = '2022-Datacenter'; IsLinux = $false }
-    'Ubuntu2204'        = @{ Publisher = 'Canonical'; Offer = '0001-com-ubuntu-server-jammy'; Sku = '22_04-lts'; IsLinux = $true }
-}
-
-function Get-VmImageSpec([string]$OS) {
-    if (-not $VmImages.Contains($OS)) {
-        throw ("未対応のイメージ: {0}（対応: {1}）" -f $OS, ($VmImages.Keys -join ', '))
-    }
-    return $VmImages[$OS]
-}
-
-# VM の自動シャットダウン（az vm auto-shutdown 相当）。Time は UTC の HHmm（1500 = JST 0000）。
-function Set-VmAutoShutdown([string]$ResourceGroupName, [string]$VmName, [string]$Location, [string]$Time = '1500') {
-    $vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VmName
-    $props = @{
-        status               = 'Enabled'
-        taskType             = 'ComputeVmShutdownTask'
-        dailyRecurrence      = @{ time = $Time }
-        timeZoneId           = 'UTC'
-        notificationSettings = @{ status = 'Disabled'; timeInMinutes = 30 }
-        targetResourceId     = $vm.Id
-    }
-    $null = New-AzResource -ResourceType 'Microsoft.DevTestLab/schedules' `
-        -ResourceName "shutdown-computevm-$VmName" `
-        -ResourceGroupName $ResourceGroupName -Location $Location `
-        -Properties $props -Force
-    Say "  自動シャットダウンを設定しました (UTC $Time)" -Color DarkGray
-}
-
-function Get-CredentialIfNull([pscredential]$Credential, [string]$Message) {
-    if ($Credential) { return $Credential }
-    return (Get-Credential -Message $Message)
-}
+# VM 関連の共通部品（Simplest / SingleVM で共有。AzureIaC\Common\Vm.Common.ps1）
+. (Join-Path $PSScriptRoot '..\..\Common\Vm.Common.ps1')
 
 # 既存サブネットへ、パブリック IP なしの VM を作る（az vm create --public-ip-address "" 相当）。
 function New-PrivateVM {
     param(
         [string]$ResourceGroupName, [string]$Location, [string]$VmName, [string]$VmSize, [string]$OS,
-        [pscredential]$Credential, [string]$VnetName, [string]$SubnetName
+        [pscredential]$Credential, [string]$VnetName, [string]$SubnetName, [string]$SshPublicKey
     )
     $vnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -Name $VnetName
     $subnet = $vnet.Subnets | Where-Object { $_.Name -eq $SubnetName }
@@ -261,18 +227,7 @@ function New-PrivateVM {
     $img = Get-VmImageSpec $OS
     $nic = New-AzNetworkInterface -Name "${VmName}VMNic" -ResourceGroupName $ResourceGroupName `
         -Location $Location -SubnetId $subnet.Id
-
-    $cfg = New-AzVMConfig -VMName $VmName -VMSize $VmSize
-    if ($img.IsLinux) {
-        $cfg = Set-AzVMOperatingSystem -VM $cfg -Linux -ComputerName $VmName -Credential $Credential
-    }
-    else {
-        $computerName = $VmName.Substring(0, [Math]::Min(15, $VmName.Length))   # Windows は 15 文字まで
-        $cfg = Set-AzVMOperatingSystem -VM $cfg -Windows -ComputerName $computerName -Credential $Credential `
-            -ProvisionVMAgent -EnableAutoUpdate
-    }
-    $cfg = Set-AzVMSourceImage -VM $cfg -PublisherName $img.Publisher -Offer $img.Offer -Skus $img.Sku -Version latest
-    $cfg = Add-AzVMNetworkInterface -VM $cfg -Id $nic.Id
+    $cfg = New-VmConfig $VmName $VmSize $img $Credential $nic.Id $SshPublicKey
 
     Say "  VM '$VmName' を作成します（数分かかります）" -Color Cyan
     $null = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $cfg
@@ -290,13 +245,20 @@ function Confirm-Action([string]$Message, [switch]$Force) {
 
 # リソースプロバイダーの登録状態を返す（未登録なら NotRegistered）。
 function Get-ProviderState([string]$Namespace) {
-    $p = Get-AzResourceProvider -ProviderNamespace $Namespace -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($p) { return [string]$p.RegistrationState } else { return 'NotRegistered' }
+    # 一時的な API エラーで「未登録」と誤判定しないよう、再試行する。取得できなければ Unknown を返す。
+    for ($try = 1; $try -le 3; $try++) {
+        try {
+            $p = Get-AzResourceProvider -ProviderNamespace $Namespace -ErrorAction Stop | Select-Object -First 1
+            if ($p) { return [string]$p.RegistrationState } else { return 'NotRegistered' }
+        }
+        catch { if ($try -lt 3) { Start-Sleep -Seconds 2 } }
+    }
+    return 'Unknown'
 }
 
 # 必要なリソースプロバイダーが未登録なら、分かりやすいメッセージで止める。
 function Assert-ResourceProviders([string[]]$Namespaces) {
-    $missing = @($Namespaces | Where-Object { (Get-ProviderState $_) -ne 'Registered' })
+    $missing = @($Namespaces | Where-Object { (Get-ProviderState $_) -eq 'NotRegistered' })
     if ($missing.Count -gt 0) {
         throw ("リソースプロバイダーが未登録です: {0}。.\Test-Prerequisites.ps1 -Register で登録してください。" -f ($missing -join ', '))
     }

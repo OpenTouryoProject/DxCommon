@@ -22,14 +22,19 @@ param(
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
     [string]$AutoShutdownTime = '1500',
-    [switch]$NoAutoShutdown
+    [switch]$NoAutoShutdown,
+    [string]$SshKeyPath,
+    [switch]$InstallXrdp
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Simplest.Common.ps1')
 $null = Assert-AzLogin
 Assert-ResourceProviders $RequiredProviders
 
+$img = Get-VmImageSpec $OS
+if ($InstallXrdp -and -not $img.IsLinux) { throw '-InstallXrdp は Linux（Ubuntu2204）でのみ使えます。' }
 $cred = Get-CredentialIfNull $Credential "VM '$VmName' の管理者ユーザー名とパスワード"
+$sshKey = if ($img.IsLinux) { New-LocalSshKey $VmName $SshKeyPath } else { $null }
 
 Initialize-ResourceGroup $ResourceGroupName $Location
 
@@ -44,8 +49,11 @@ else {
         -Location $Location -AddressPrefix '10.1.0.0/16' -Subnet $subnet
 }
 
+if ($sshKey) { Register-VmSshKey $ResourceGroupName $VmName $sshKey.PublicKey }
 New-PrivateVM -ResourceGroupName $ResourceGroupName -Location $Location -VmName $VmName -VmSize $VmSize `
-    -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName
+    -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName -SshPublicKey $sshKey.PublicKey
+
+if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred.UserName }
 
 if (-not $NoAutoShutdown) {
     Set-VmAutoShutdown -ResourceGroupName $ResourceGroupName -VmName $VmName -Location $Location -Time $AutoShutdownTime

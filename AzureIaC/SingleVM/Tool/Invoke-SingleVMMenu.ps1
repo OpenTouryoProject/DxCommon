@@ -33,12 +33,28 @@ $commands = @(
        Note = '管理者のユーザー名・パスワードは、実行時に入力を求められる。Linux は SSH 鍵も作成する。VM は課金される。'
        Params = @($loc, $rg, $vm,
             @{ Name = 'VmSize'; Prompt = 'VM サイズ'; Default = 'Standard_D4s_v3' },
-            @{ Name = 'OS'; Prompt = 'OS イメージ'; Kind = 'Choice'; Choices = @($VmImages.Keys); Default = 'Win2019Datacenter' }) },
-    @{ Label = 'Open-VMPort     : VM の受信ポートを開ける（NSG ルール追加）'; Script = 'Open-VMPort.ps1'; Danger = $true
-       Note = '送信元を * にすると、インターネット全体に公開される。'
+            @{ Name = 'OS'; Prompt = 'OS イメージ'; Kind = 'Choice'; Choices = @($VmImages.Keys); Default = 'Win2019Datacenter' },
+            @{ Name = 'InstallXrdp'; Prompt = 'Linux に xfce4 と xrdp をインストールする（Ubuntu2204 のみ）'; Kind = 'Switch'; Default = $false },
+            @{ Name = 'SourceAddressPrefix'; Prompt = 'RDP/SSH を許可する送信元（IP / CIDR。Windows は必須、空 = -MyIp を使うか Linux は *）' },
+            @{ Name = 'MyIp'; Prompt = '自分の現在の IP を送信元にする'; Kind = 'Switch'; Default = $true }) },
+    @{ Label = 'Open-VMPort     : VM の受信ポートを開ける（NSG ルール追加。送信元の IP 制限つき）'; Script = 'Open-VMPort.ps1'; Danger = $true
+       Note = 'Windows VM と 3389 は、送信元の IP 制限が必須（全許可は拒否）。自分の IP は -MyIp で自動取得（api.ipify.org に問い合わせる）。'
        Params = @($rg, $vm,
             @{ Name = 'Port'; Prompt = '開けるポート'; Default = '3389' },
-            @{ Name = 'SourceAddressPrefix'; Prompt = '許可する送信元（IP / CIDR / *）'; Default = '*' }) },
+            @{ Name = 'SourceAddressPrefix'; Prompt = '許可する送信元（IP / CIDR。空 = 下の -MyIp を使う）' },
+            @{ Name = 'MyIp'; Prompt = '自分の現在の IP を送信元にする'; Kind = 'Switch'; Default = $true }) },
+    @{ Label = 'Update-VMAllowedIp : 自分の IP が変わったとき、許可元の IP を更新'; Script = 'Update-VMAllowedIp.ps1'; Danger = $true
+       Note = '指定ポートを許可している受信ルールの送信元を付け替える。全許可は拒否する。'
+       Params = @($rg, $vm,
+            @{ Name = 'Port'; Prompt = '対象のポート'; Default = '3389' },
+            @{ Name = 'SourceAddressPrefix'; Prompt = '新しい送信元（IP / CIDR。空 = 下の -MyIp を使う）' },
+            @{ Name = 'MyIp'; Prompt = '自分の現在の IP を送信元にする'; Kind = 'Switch'; Default = $true }) },
+    @{ Label = 'Enable-EntraLogin  : Windows VM に Entra ID の RDP ログインを設定'; Script = 'Enable-EntraLogin.ps1'; Danger = $true
+       Note = 'マネージド ID・拡張機能 AADLoginForWindows・ロール割り当て。Windows 専用。VM は起動している必要がある。'
+       Params = @($rg, $vm,
+            @{ Name = 'UserPrincipalName'; Prompt = 'ロールを割り当てるユーザー（UPN / メール）' },
+            @{ Name = 'Role'; Prompt = 'ロール（Administrator / User）'; Kind = 'Choice'; Choices = @('Administrator', 'User'); Default = 'Administrator' },
+            @{ Name = 'RdpFilePath'; Prompt = '書き出す .rdp ファイルのパス' }) },
     @{ Label = 'Show-VMInfo     : VM の状態・パブリック IP・NSG を表示（読み取り専用）'; Script = 'Show-VMInfo.ps1'; Danger = $false
        Params = @($rg, $vm) },
     @{ Label = 'Show-VMCatalog  : VM サイズ / イメージの一覧を表示（読み取り専用）'; Script = 'Show-VMCatalog.ps1'; Danger = $false
