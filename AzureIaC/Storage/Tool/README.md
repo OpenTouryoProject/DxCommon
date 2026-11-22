@@ -25,10 +25,13 @@ Azure Storage（ストレージアカウントと BLOB コンテナ）を構築�
 | `Test-Prerequisites.ps1` | - | モジュール、サインイン、リソースプロバイダーを確認する |
 | `New-StorageAccount.ps1` | Creating | RG、ストレージアカウント、自分への `Storage Blob Data Contributor` ロール、コンテナを作成する |
 | `Add-StorageNetworkRule.ps1` | Add as needed | ネットワークルールに、許可する IP アドレスを追加する |
+| `Set-StorageSecurity.ps1` | - | 最小 TLS を 1.2 に上げる（`-DisableBlobPublicAccess` で匿名アクセスも無効化）。`-WhatIf` で対象だけ確認できる |
 | `Show-Storage.ps1` | - | アカウント、ロール割り当て、コンテナ、ネットワークルールを表示する（読み取り専用） |
 | `Remove-StorageAccount.ps1` | - | ストレージアカウント（または、リソースグループごと）を削除する |
 
 ## 注意
+- `New-StorageAccount.ps1` は、最小 TLS 1.2 と、BLOB の匿名アクセス無効で作る。既存のアカウント（や、VM の起動診断用に Azure が自動で作ったもの）は、`Set-StorageSecurity.ps1` で上げる。
+- 最小 TLS を上げると、TLS 1.0 / 1.1 でしか接続できない古いクライアントは接続できなくなる。
 - ストレージアカウント名は、グローバルで一意である必要がある（小文字の英字と数字で 3〜24 文字）。既定の `osscjpdevinfra` は、既に使われている可能性がある。
 - コンテナは Azure AD 認証で作る。ロール割り当ての反映に時間がかかることがあるため、スクリプトは再試行する。
 - 既定のアクション（`DefaultAction`）が `Allow` のままだと、IP ルールを追加しても、アクセスは制限されない。

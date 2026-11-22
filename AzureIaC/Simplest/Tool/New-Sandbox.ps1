@@ -18,7 +18,7 @@ param(
     [string]$SubnetName = 'YourSubnet',
     [string]$VmName = 'YourVM1',
     [string]$VmSize = 'Standard_D4s_v3',
-    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2204')]
+    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
     [string]$AutoShutdownTime = '1500',
@@ -53,7 +53,7 @@ if ($sshKey) { Register-VmSshKey $ResourceGroupName $VmName $sshKey.PublicKey }
 New-PrivateVM -ResourceGroupName $ResourceGroupName -Location $Location -VmName $VmName -VmSize $VmSize `
     -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName -SshPublicKey $sshKey.PublicKey
 
-if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred.UserName }
+if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred }
 
 if (-not $NoAutoShutdown) {
     Set-VmAutoShutdown -ResourceGroupName $ResourceGroupName -VmName $VmName -Location $Location -Time $AutoShutdownTime

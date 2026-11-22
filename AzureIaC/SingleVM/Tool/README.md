@@ -37,12 +37,12 @@
 - 管理者のユーザー名とパスワードは、実行時に `Get-Credential` で入力する（`-Credential` で渡すこともできる）。
 - Windows: NSG で RDP（3389）を許可する。Linux: `ssh-keygen` で SSH 鍵を作り（パスフレーズを聞かれる）、
   公開鍵を Azure の SSH キー `<VmName>-sshkey` に登録して、SSH（22）を許可する。
-  xrdp でログインできるように、パスワード認証は有効のままにしている。
+  SSH はパスワード認証が無効（鍵のみ）。xrdp 用のパスワードは、`-InstallXrdp` が VMAccess 拡張で設定する。
 - 直接 RDP を開ける場合の流れ（Windows）: `New-SingleVM.ps1 -MyIp`（または `-SourceAddressPrefix`）→ 必要なら `Enable-EntraLogin.ps1` → IP が変わったら `Update-VMAllowedIp.ps1 -MyIp`。
 - 送信元の IP 制限は、Windows VM と 3389 では必須で、`*` / `Internet` / `0.0.0.0/0` は拒否する。Linux の 3389 以外（22 など）は、制限なしでも開けられる（警告）。
 - `-MyIp` は、自分のグローバル IP を外部サービス `api.ipify.org` に問い合わせて調べる。使いたくない場合は、`-SourceAddressPrefix` で IP を直接指定する。
 - `Enable-EntraLogin.ps1` を使っても、VM ローカルの管理者パスワードでのログインは残る。MFA を求めたい場合は、条件付きアクセスで「Azure Windows VM Sign-In」に MFA を要求する。
   `.rdp` の項目（`enablerdsaadauth` / `targetisaadjoined`）は、実機での確認はこれから。つながらない場合は、ユーザー名を `AzureAD\<UPN>` にしてパスワードで入る。
 - `Remove-SingleVM.ps1` は、他と共有している可能性があるため、名前が VM 名で始まる NIC・Public IP・NSG・VNet だけを削除する。
-- 使えるイメージ: `Win2019Datacenter`、`Win2022Datacenter`、`Ubuntu2204`。
+- 使えるイメージ: `Win2019Datacenter`、`Win2022Datacenter`、`Ubuntu2604`（Ubuntu 26.04 LTS）、`Ubuntu2404`、`Ubuntu2204`。
 - Linux の xrdp は `-InstallXrdp` で入れられる（3389 は開かないので、`Open-VMPort.ps1` で接続元を絞って開ける）。ロケールやブラウザは、今のところ手作業。[Linux.md](../Research/Linux.md) を参照。

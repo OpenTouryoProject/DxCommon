@@ -43,7 +43,8 @@ if ($sa) {
 else {
     Say "  ストレージアカウント '$StorageAccountName' を作成します" -Color Cyan
     $sa = New-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName `
-        -Location $Location -SkuName $SkuName
+        -Location $Location -SkuName $SkuName `
+        -MinimumTlsVersion TLS1_2 -AllowBlobPublicAccess $false
 }
 
 # ロール割り当て

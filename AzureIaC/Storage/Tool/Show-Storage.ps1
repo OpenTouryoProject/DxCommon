@@ -18,7 +18,7 @@ $sa = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageA
 if (-not $sa) { throw "ストレージアカウント '$StorageAccountName'（RG: $ResourceGroupName）が見つかりません。" }
 
 Say 'ストレージアカウント:' -Color Cyan
-$sa | Format-Table StorageAccountName, Location, @{ n = 'Sku'; e = { $_.Sku.Name } }, Kind -AutoSize | Out-Host
+$sa | Format-Table StorageAccountName, Location, @{ n = 'Sku'; e = { $_.Sku.Name } }, Kind, MinimumTlsVersion, AllowBlobPublicAccess -AutoSize | Out-Host
 
 Say 'ロール割り当て（このストレージアカウント）:' -Color Cyan
 Get-AzRoleAssignment -Scope $sa.Id | Where-Object { $_.Scope -eq $sa.Id } |

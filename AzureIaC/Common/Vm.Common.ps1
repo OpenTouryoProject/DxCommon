@@ -5,6 +5,8 @@
 $VmImages = [ordered]@{
     'Win2019Datacenter' = @{ Publisher = 'MicrosoftWindowsServer'; Offer = 'WindowsServer'; Sku = '2019-Datacenter'; IsLinux = $false }
     'Win2022Datacenter' = @{ Publisher = 'MicrosoftWindowsServer'; Offer = 'WindowsServer'; Sku = '2022-Datacenter'; IsLinux = $false }
+    'Ubuntu2604'        = @{ Publisher = 'Canonical'; Offer = 'ubuntu-26_04-lts'; Sku = 'server'; IsLinux = $true }
+    'Ubuntu2404'        = @{ Publisher = 'Canonical'; Offer = 'ubuntu-24_04-lts'; Sku = 'server'; IsLinux = $true }
     'Ubuntu2204'        = @{ Publisher = 'Canonical'; Offer = '0001-com-ubuntu-server-jammy'; Sku = '22_04-lts'; IsLinux = $true }
 }
 
@@ -63,7 +65,7 @@ function Register-VmSshKey([string]$ResourceGroupName, [string]$VmName, [string]
     }
 }
 
-# VM 構成（OS・イメージ・NIC）を作る。Linux は、公開鍵があれば登録する（パスワード認証は有効のまま）。
+# VM 構成（OS・イメージ・NIC）を作る。Linux は、公開鍵があれば登録する（Azure が SSH のパスワード認証を無効にする）。
 function New-VmConfig([string]$VmName, [string]$VmSize, $Image, [pscredential]$Credential, [string]$NicId, [string]$SshPublicKey) {
     $cfg = New-AzVMConfig -VMName $VmName -VMSize $VmSize
     if ($Image.IsLinux) {
@@ -81,9 +83,30 @@ function New-VmConfig([string]$VmName, [string]$VmSize, $Image, [pscredential]$C
     return (Add-AzVMNetworkInterface -VM $cfg -Id $NicId)
 }
 
+# Linux VM のユーザーのパスワードを設定する（VMAccess 拡張。パスワードは保護された設定で渡す）。
+# SSH 鍵つきで作った VM は、Azure が既定でパスワード認証を無効にし、パスワードもロックされる。
+# ここで設定するのは、xrdp などのログイン用。sshd のパスワード認証は有効にしない（SSH は鍵のまま）。
+function Set-LinuxUserPassword([string]$ResourceGroupName, [string]$VmName, [pscredential]$Credential) {
+    Say "  ユーザー '$($Credential.UserName)' のパスワードを設定します（VMAccess 拡張）" -Color Cyan
+    $vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VmName
+    $prot = @{ username = $Credential.UserName; password = $Credential.GetNetworkCredential().Password }
+    $null = Set-AzVMExtension -ResourceGroupName $ResourceGroupName -VMName $VmName -Location $vm.Location `
+        -Name 'enablevmaccess' -Publisher 'Microsoft.OSTCExtensions' -ExtensionType 'VMAccessForLinux' `
+        -TypeHandlerVersion '1.5' -ProtectedSettings $prot -ForceRerun ([guid]::NewGuid().ToString())
+}
+
 # Linux VM に、デスクトップ環境（xfce4）と xrdp を入れる（Run Command で実行。数分かかる）。
 # 3389 の受信は開けない。必要なら NSG などで、接続元を絞って開けること。
-function Install-Xrdp([string]$ResourceGroupName, [string]$VmName, [string]$UserName) {
+function Install-Xrdp([string]$ResourceGroupName, [string]$VmName, [pscredential]$Credential) {
+    $UserName = $Credential.UserName
+    Set-LinuxUserPassword $ResourceGroupName $VmName $Credential
+    # 外向き通信の確認（新しい VNet のサブネットは、既定の外向き通信が無効。パブリック IP も NAT Gateway も無いと apt が使えない）
+    $t = Invoke-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName $VmName -CommandId 'RunShellScript' `
+        -ScriptString '(timeout 8 bash -c "echo > /dev/tcp/azure.archive.ubuntu.com/80" && echo outbound-ok) 2>&1 || echo outbound-fail'
+    if (($t.Value | ForEach-Object { $_.Message }) -join '' -notmatch 'outbound-ok') {
+        throw ("VM '{0}' から、インターネット（Ubuntu のパッケージ ミラー）に出られません。" -f $VmName) +
+            "`n  対処: NIC に一時的な Public IP を付けて再実行し、終わったら外して削除する（または、サブネットに NAT Gateway を付ける）。"
+    }
     Say "  VM '$VmName' に xfce4 と xrdp をインストールします（数分かかります）" -Color Cyan
     $script = @'
 set -e
@@ -102,5 +125,5 @@ echo xrdp-installed
         -CommandId 'RunShellScript' -ScriptString $script
     $out = ($r.Value | ForEach-Object { $_.Message }) -join "`n"
     if ($out -notmatch 'xrdp-installed') { throw "xrdp のインストールに失敗した可能性があります:`n$out" }
-    Say "  xrdp をインストールしました。ログインには、この VM の管理者ユーザーとパスワードを使います。" -Color DarkGray
+    Say "  xrdp をインストールしました。ログインには、この VM の管理者ユーザーとパスワードを使います（SSH は鍵のみ）。" -Color DarkGray
 }

@@ -7,12 +7,12 @@
       Windows: RDP(3389) を許可する NSG ルールを付ける。
       Linux  : SSH 鍵（-SshKeyPath）で SSH(22) を許可する。鍵が無ければ ssh-keygen で作成し（パスフレーズは対話入力）、
                公開鍵を Azure の SSH キーリソース（<VmName>-sshkey）にも登録する。
-               パスワード認証も有効のまま（xrdp でのログイン用）。
+               SSH はパスワード認証が無効（鍵のみ）。xrdp 用のパスワードは -InstallXrdp が設定する。
     管理者のユーザー名とパスワードは、実行時に Get-Credential で入力する（-Credential でも渡せる）。
     リソースグループは、無ければ作成する。VM の作成には数分かかり、課金される。
 
 .PARAMETER OS
-    Win2019Datacenter / Win2022Datacenter / Ubuntu2204
+    Win2019Datacenter / Win2022Datacenter / Ubuntu2604 / Ubuntu2404 / Ubuntu2204
 
 .PARAMETER SshKeyPath
     Linux 用の秘密鍵のパス。既定: ~/.ssh/<VmName>。公開鍵は <SshKeyPath>.pub。
@@ -36,7 +36,7 @@ param(
     [string]$ResourceGroupName = 'hogeRG',
     [string]$VmName = 'hogeVM',
     [string]$VmSize = 'Standard_D4s_v3',
-    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2204')]
+    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
     [string]$SshKeyPath,
@@ -89,7 +89,7 @@ $cfg = New-VmConfig $VmName $VmSize $img $cred $nic.Id $pubKey
 Say "  VM '$VmName' を作成します（数分かかります）" -Color Cyan
 $null = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $cfg
 
-if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred.UserName }
+if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred }
 
 $ip = (Get-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name $pip.Name).IpAddress
 Say ''

@@ -35,6 +35,13 @@ $commands = @(
             @{ Name = 'ContainerName'; Prompt = 'コンテナ名'; Default = 'dxcmn' }) },
     @{ Label = 'Add-StorageNetworkRule : 許可する IP アドレスを追加'; Script = 'Add-StorageNetworkRule.ps1'; Danger = $true
        Params = @($rg, $sa, @{ Name = 'IpAddress'; Prompt = '許可する IP アドレス（範囲）'; Required = $true }) },
+    @{ Label = 'Set-StorageSecurity    : 最小 TLS を 1.2 に上げる（匿名アクセス無効化も選べる）'; Script = 'Set-StorageSecurity.ps1'; Danger = $true
+       Note = 'TLS 1.0 / 1.1 でしか接続できない古いクライアントは、接続できなくなる。変更前に、対象と現在の設定を表示して確認する。'
+       Params = @(
+            @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ（空 = サブスクリプション全体）' },
+            @{ Name = 'StorageAccountName'; Prompt = 'ストレージアカウント名（空 = 対象範囲のすべて）' },
+            @{ Name = 'DisableBlobPublicAccess'; Prompt = 'BLOB の匿名アクセスも無効にする'; Kind = 'Switch'; Default = $false },
+            @{ Name = 'WhatIf'; Prompt = '変更せず、対象だけを表示する'; Kind = 'Switch'; Default = $true }) },
     @{ Label = 'Show-Storage           : 状態を表示（読み取り専用）'; Script = 'Show-Storage.ps1'; Danger = $false
        Params = @($rg, $sa) },
     @{ Label = 'Remove-StorageAccount  : ストレージアカウントを削除'; Script = 'Remove-StorageAccount.ps1'; Danger = $true; Destroy = $true

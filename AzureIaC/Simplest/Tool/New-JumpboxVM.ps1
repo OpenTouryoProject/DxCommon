@@ -8,11 +8,11 @@
     管理者のユーザー名とパスワードは、実行時に Get-Credential で入力する（-Credential でも渡せる）。
 
 .PARAMETER OS
-    Win2019Datacenter / Win2022Datacenter / Ubuntu2204
+    Win2019Datacenter / Win2022Datacenter / Ubuntu2604 / Ubuntu2404 / Ubuntu2204
 
 .PARAMETER SshKeyPath
     Linux 用の秘密鍵のパス。既定: ~/.ssh/<VmName>。無ければ ssh-keygen で作成する（パスフレーズは対話入力）。
-    公開鍵は VM に登録し、Azure の SSH キー <VmName>-sshkey にも登録する。パスワード認証も有効のまま（xrdp 用）。
+    公開鍵は VM に登録し、Azure の SSH キー <VmName>-sshkey にも登録する。SSH はパスワード認証が無効（鍵のみ）。xrdp 用のパスワードは -InstallXrdp が設定する。
 
 .PARAMETER InstallXrdp
     Linux（Ubuntu2204）に、xfce4 と xrdp をインストールする（Run Command。数分かかる）。3389 の受信は開けない。
@@ -31,7 +31,7 @@ param(
     [string]$SubnetName = 'JumpboxSubnet',
     [string]$VmName = 'JumpboxVM1',
     [string]$VmSize = 'Standard_D4s_v3',
-    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2204')]
+    [ValidateSet('Win2019Datacenter', 'Win2022Datacenter', 'Ubuntu2604', 'Ubuntu2404', 'Ubuntu2204')]
     [string]$OS = 'Win2019Datacenter',
     [pscredential]$Credential,
     [string]$AutoShutdownTime = '1500',
@@ -52,7 +52,7 @@ if ($sshKey) { Register-VmSshKey $ResourceGroupName $VmName $sshKey.PublicKey }
 New-PrivateVM -ResourceGroupName $ResourceGroupName -Location $Location -VmName $VmName -VmSize $VmSize `
     -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName -SshPublicKey $sshKey.PublicKey
 
-if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred.UserName }
+if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred }
 
 if (-not $NoAutoShutdown) {
     Set-VmAutoShutdown -ResourceGroupName $ResourceGroupName -VmName $VmName -Location $Location -Time $AutoShutdownTime

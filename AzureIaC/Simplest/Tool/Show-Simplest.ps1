@@ -28,7 +28,7 @@ foreach ($rg in @($BastionResourceGroupName, $SandboxResourceGroupName)) {
             ForEach-Object { Say ("    peering {0}: {1}" -f $_.Name, $_.PeeringState) }
     }
     Say 'Bastion:' -Color DarkGray
-    Get-AzBastion -ResourceGroupName $rg | Format-Table Name, ProvisioningState, Sku -AutoSize | Out-Host
+    Get-AzBastion -ResourceGroupName $rg | Format-Table Name, ProvisioningState, @{ n = 'Sku'; e = { $_.Sku.Name } } -AutoSize | Out-Host
     Say 'VM:' -Color DarkGray
     Get-AzVM -ResourceGroupName $rg -Status | Format-Table Name, PowerState, Location -AutoSize | Out-Host
     Say 'Public IP:' -Color DarkGray
