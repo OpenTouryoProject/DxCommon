@@ -218,7 +218,8 @@ function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
 function New-PrivateVM {
     param(
         [string]$ResourceGroupName, [string]$Location, [string]$VmName, [string]$VmSize, [string]$OS,
-        [pscredential]$Credential, [string]$VnetName, [string]$SubnetName, [string]$SshPublicKey
+        [pscredential]$Credential, [string]$VnetName, [string]$SubnetName, [string]$SshPublicKey,
+        [int]$OsDiskSizeGb = 0, [string]$OsDiskType = ''
     )
     $vnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -Name $VnetName
     $subnet = $vnet.Subnets | Where-Object { $_.Name -eq $SubnetName }
@@ -227,10 +228,11 @@ function New-PrivateVM {
     $img = Get-VmImageSpec $OS
     $nic = New-AzNetworkInterface -Name "${VmName}VMNic" -ResourceGroupName $ResourceGroupName `
         -Location $Location -SubnetId $subnet.Id
-    $cfg = New-VmConfig $VmName $VmSize $img $Credential $nic.Id $SshPublicKey
+    $cfg = New-VmConfig $VmName $VmSize $img $Credential $nic.Id $SshPublicKey $OsDiskSizeGb $OsDiskType
 
     Say "  VM '$VmName' を作成します（数分かかります）" -Color Cyan
     $null = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $cfg
+    if ($OsDiskSizeGb -gt 0 -and -not $img.IsLinux) { Expand-WindowsOsPartition $ResourceGroupName $VmName }
 }
 
 # ==============================================================================

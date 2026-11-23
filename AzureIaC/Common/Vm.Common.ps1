@@ -67,7 +67,7 @@ function Register-VmSshKey([string]$ResourceGroupName, [string]$VmName, [string]
 }
 
 # VM 構成（OS・イメージ・NIC）を作る。Linux は、公開鍵があれば登録する（Azure が SSH のパスワード認証を無効にする）。
-function New-VmConfig([string]$VmName, [string]$VmSize, $Image, [pscredential]$Credential, [string]$NicId, [string]$SshPublicKey) {
+function New-VmConfig([string]$VmName, [string]$VmSize, $Image, [pscredential]$Credential, [string]$NicId, [string]$SshPublicKey, [int]$OsDiskSizeGb = 0, [string]$OsDiskType = '') {
     $cfg = New-AzVMConfig -VMName $VmName -VMSize $VmSize
     if ($Image.IsLinux) {
         $cfg = Set-AzVMOperatingSystem -VM $cfg -Linux -ComputerName $VmName -Credential $Credential
@@ -81,6 +81,13 @@ function New-VmConfig([string]$VmName, [string]$VmSize, $Image, [pscredential]$C
             -ProvisionVMAgent -EnableAutoUpdate
     }
     $cfg = Set-AzVMSourceImage -VM $cfg -PublisherName $Image.Publisher -Offer $Image.Offer -Skus $Image.Sku -Version latest
+    # OS ディスクのサイズ（GB）と種類（StandardSSD_LRS / Premium_LRS / Standard_LRS）。指定しなければ、イメージと Azure の既定。
+    if ($OsDiskSizeGb -gt 0 -or $OsDiskType) {
+        $disk = @{ VM = $cfg; CreateOption = 'FromImage' }
+        if ($OsDiskSizeGb -gt 0) { $disk.DiskSizeInGB = $OsDiskSizeGb }
+        if ($OsDiskType) { $disk.StorageAccountType = $OsDiskType }
+        $cfg = Set-AzVMOSDisk @disk
+    }
     return (Add-AzVMNetworkInterface -VM $cfg -Id $NicId)
 }
 
@@ -122,6 +129,18 @@ function Test-VmOutbound([string]$ResourceGroupName, [string]$VmName, [bool]$OsI
         $probe = 'try { $null = Invoke-WebRequest -UseBasicParsing -Uri http://www.msftconnecttest.com/connecttest.txt -TimeoutSec 8; "outbound-ok" } catch { "outbound-fail" }'
     }
     return ((Invoke-VmCommand $ResourceGroupName $VmName $cmd $probe) -match 'outbound-ok')
+}
+
+# Windows VM の C ドライブを、ディスクの未割り当て領域いっぱいまで広げる（ディスクを大きくして作ると、パーティションは広がらない）。
+function Expand-WindowsOsPartition([string]$ResourceGroupName, [string]$VmName) {
+    Say '  C ドライブを、ディスクいっぱいまで広げます' -Color Cyan
+    $out = Invoke-VmCommand $ResourceGroupName $VmName 'RunPowerShellScript' @'
+$max = (Get-PartitionSupportedSize -DriveLetter C).SizeMax
+$cur = (Get-Partition -DriveLetter C).Size
+if ($max -gt $cur) { Resize-Partition -DriveLetter C -Size $max }
+"C-GB=" + [math]::Round((Get-Partition -DriveLetter C).Size / 1GB, 1)
+'@
+    Say ("  {0}" -f ($out -split "`n" | Where-Object { $_ -match 'C-GB' } | Select-Object -First 1)) -Color DarkGray
 }
 
 # VM がインターネットに出られないとき（プライベート サブネット。既定のアウトバウンドが無効）は、

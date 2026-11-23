@@ -24,7 +24,9 @@ param(
     [string]$AutoShutdownTime = '1500',
     [switch]$NoAutoShutdown,
     [string]$SshKeyPath,
-    [switch]$InstallXrdp
+    [switch]$InstallXrdp,
+    [int]$OsDiskSizeGb,
+    [ValidateSet('StandardSSD_LRS', 'Premium_LRS', 'Standard_LRS')][string]$OsDiskType
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Simplest.Common.ps1')
@@ -51,7 +53,8 @@ else {
 
 if ($sshKey) { Register-VmSshKey $ResourceGroupName $VmName $sshKey.PublicKey }
 New-PrivateVM -ResourceGroupName $ResourceGroupName -Location $Location -VmName $VmName -VmSize $VmSize `
-    -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName -SshPublicKey $sshKey.PublicKey
+    -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName -SshPublicKey $sshKey.PublicKey `
+    -OsDiskSizeGb $OsDiskSizeGb -OsDiskType $OsDiskType
 
 if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred }
 

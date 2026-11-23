@@ -67,8 +67,9 @@ if (-not $Enable) {
     if ($admins.Count -eq 0) {
         throw "'Virtual Machine Administrator Login' が割り当てられていません。Enable-EntraLogin.ps1 -Role Administrator で、管理者ロールを付けてください。"
     }
-    $members = Invoke-VmScript 'net localgroup Administrators'
-    if ($members -notmatch '(?im)^\s*AzureAD\\') {
+    # Entra ID のユーザーは、名前（AzureAD\...）でなく SID（S-1-12-1-...）で出ることがある。両方を見る
+    $members = Invoke-VmScript 'net localgroup Administrators; Get-LocalGroupMember Administrators | ForEach-Object { "$($_.PrincipalSource) $($_.Name)" }'
+    if ($members -notmatch '(?im)^\s*AzureAD\\' -and $members -notmatch '(?im)^\s*AzureAD\s+(AzureAD\\|S-1-12-1-)') {
         throw 'VM の Administrators グループに、Entra ID のユーザー（AzureAD\...）がいません。Entra ID の管理者で、一度ログインできることを確認してから実行してください。'
     }
     Say '  チェック OK: 拡張 / 管理者ロール / Entra ID の管理者（Administrators）' -Color DarkGray

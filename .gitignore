@@ -297,3 +297,6 @@ Notebook/path/ed-donner_agents/3_crew/*/memory/*/
 # ed-donner_llm generated artifacts
 Notebook/path/ed-donner_llm/week4/optimize_*
 Notebook/path/ed-donner_llm/week8/temp_batches/
+
+# Azure VM への接続ファイル（IP・ユーザー名を含む）
+*.rdp

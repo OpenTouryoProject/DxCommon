@@ -113,7 +113,7 @@ if (-not $vmIsLinux -and -not $NoRestart) {
 Say ''
 Say '現在の設定:' -Color Cyan
 $check = if ($vmIsLinux) { 'locale | head -3; timedatectl | grep "Time zone"' }
-         else { 'Import-Module LanguagePackManagement; "UI: " + (Get-SystemPreferredUILanguage); "システム ロケール: " + (Get-WinSystemLocale).Name; "タイムゾーン: " + (Get-TimeZone).Id; "インストール済み言語: " + ((Get-InstalledLanguage | ForEach-Object LanguageId) -join ", ")' }
+         else { '"UI=" + (Get-SystemPreferredUILanguage); "Locale=" + (Get-WinSystemLocale).Name; "Culture=" + (Get-Culture).Name; "TimeZone=" + (Get-TimeZone).Id; "GeoId=" + (Get-WinHomeLocation).GeoId; "LanguageFeatures=" + ((Get-WindowsCapability -Online -Name ("Language.*" + "__LANG__" + "*") | Where-Object State -eq "Installed" | ForEach-Object { ($_.Name -split "~")[0] }) -join ",")'.Replace('__LANG__', $Language) }
 $checkOut = $null
 for ($i = 1; $i -le 8 -and -not $checkOut; $i++) {
     try { $checkOut = (Invoke-VmShell $cmdId $check).Trim() }

@@ -14,6 +14,12 @@
     Linux 用の秘密鍵のパス。既定: ~/.ssh/<VmName>。無ければ ssh-keygen で作成する（パスフレーズは対話入力）。
     公開鍵は VM に登録し、Azure の SSH キー <VmName>-sshkey にも登録する。SSH はパスワード認証が無効（鍵のみ）。xrdp 用のパスワードは -InstallXrdp が設定する。
 
+.PARAMETER OsDiskSizeGb
+    OS ディスク（C ドライブ）のサイズ（GB）。省略すると、イメージの既定（Windows は 127 GB）。大きくすると、C ドライブも自動で広げる。
+
+.PARAMETER OsDiskType
+    OS ディスクの種類（SKU）。StandardSSD_LRS / Premium_LRS / Standard_LRS。省略すると、Azure の既定。
+
 .PARAMETER InstallXrdp
     Linux（Ubuntu2204）に、xfce4 と xrdp をインストールする（Run Command。数分かかる）。3389 の受信は開けない。
 
@@ -37,7 +43,9 @@ param(
     [string]$AutoShutdownTime = '1500',
     [switch]$NoAutoShutdown,
     [string]$SshKeyPath,
-    [switch]$InstallXrdp
+    [switch]$InstallXrdp,
+    [int]$OsDiskSizeGb,
+    [ValidateSet('StandardSSD_LRS', 'Premium_LRS', 'Standard_LRS')][string]$OsDiskType
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Simplest.Common.ps1')
@@ -50,7 +58,8 @@ $cred = Get-CredentialIfNull $Credential "VM '$VmName' の管理者ユーザー�
 $sshKey = if ($img.IsLinux) { New-LocalSshKey $VmName $SshKeyPath } else { $null }
 if ($sshKey) { Register-VmSshKey $ResourceGroupName $VmName $sshKey.PublicKey }
 New-PrivateVM -ResourceGroupName $ResourceGroupName -Location $Location -VmName $VmName -VmSize $VmSize `
-    -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName -SshPublicKey $sshKey.PublicKey
+    -OS $OS -Credential $cred -VnetName $VnetName -SubnetName $SubnetName -SshPublicKey $sshKey.PublicKey `
+    -OsDiskSizeGb $OsDiskSizeGb -OsDiskType $OsDiskType
 
 if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred }
 

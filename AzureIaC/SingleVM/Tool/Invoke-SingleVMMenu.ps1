@@ -35,6 +35,8 @@ $commands = @(
             @{ Name = 'VmSize'; Prompt = 'VM サイズ'; Default = 'Standard_D4s_v3' },
             @{ Name = 'OS'; Prompt = 'OS イメージ'; Kind = 'Choice'; Choices = @($VmImages.Keys); Default = 'Win2019Datacenter' },
             @{ Name = 'InstallXrdp'; Prompt = 'Linux に xfce4 と xrdp をインストールする（Ubuntu2204 のみ）'; Kind = 'Switch'; Default = $false },
+            @{ Name = 'OsDiskSizeGb'; Prompt = 'OS ディスク（C ドライブ）のサイズ GB（空 = イメージの既定）' },
+            @{ Name = 'OsDiskType'; Prompt = 'OS ディスクの種類（StandardSSD_LRS / Premium_LRS / Standard_LRS。空 = Azure の既定）' },
             @{ Name = 'SourceAddressPrefix'; Prompt = 'RDP/SSH を許可する送信元（IP / CIDR。Windows は必須、空 = -MyIp を使うか Linux は *）' },
             @{ Name = 'MyIp'; Prompt = '自分の現在の IP を送信元にする'; Kind = 'Switch'; Default = $true }) },
     @{ Label = 'Add-VMPublicIp     : 既存 VM に Public IP を付ける（NSG 作成・IP 制限つきでポートを開ける）'; Script = 'Add-VMPublicIp.ps1'; Danger = $true
@@ -52,11 +54,22 @@ $commands = @(
             @{ Name = 'Mode'; Prompt = '方法（DenyRdp: RDP ログオン拒否 / DisableAccount: アカウント無効化）'; Kind = 'Choice'; Choices = @('DenyRdp', 'DisableAccount'); Default = 'DenyRdp' },
             @{ Name = 'Enable'; Prompt = '止めずに、戻す（拒否の解除 / アカウントの有効化）'; Kind = 'Switch'; Default = $false },
             @{ Name = 'WhatIf'; Prompt = '変更せず、チェックだけを行う'; Kind = 'Switch'; Default = $true }) },
+    @{ Label = 'Set-VMUac          : Windows VM のユーザー アカウント制御（UAC）を無効にする / 戻す'; Script = 'Set-VMUac.ps1'; Danger = $true
+       Note = 'セキュリティの低下になる。Full は EnableLUA=0 で再起動が必要。NoPrompt は昇格の確認だけを出さない。-Enable で既定に戻す。開発・検証用の VM に限る。'
+       Params = @($rg, $vm,
+            @{ Name = 'Mode'; Prompt = '方法（Full: UAC を完全に無効 / NoPrompt: 昇格の確認を出さない）'; Kind = 'Choice'; Choices = @('Full', 'NoPrompt'); Default = 'Full' },
+            @{ Name = 'Enable'; Prompt = '無効にせず、既定に戻す'; Kind = 'Switch'; Default = $false },
+            @{ Name = 'NoRestart'; Prompt = '再起動しない（Full のとき）'; Kind = 'Switch'; Default = $false }) },
     @{ Label = 'Set-VMLocale       : VM の言語・ロケール・タイムゾーンを設定（既定: 日本語 / 東京）'; Script = 'Set-VMLocale.ps1'; Danger = $true
        Note = 'Run Command で VM の中を設定する。インターネットに出られない VM には、一時的な Public IP を付けて、終わったら削除する。Windows は再起動する。数分〜10 分以上かかる。'
        Params = @($rg, $vm,
             @{ Name = 'Language'; Prompt = '言語'; Default = 'ja-JP' },
             @{ Name = 'NoRestart'; Prompt = 'Windows を再起動しない'; Kind = 'Switch'; Default = $false }) },
+    @{ Label = 'Set-VMSize         : VM のサイズ（SKU）を変更（停止 → 変更 → 起動）'; Script = 'Set-VMSize.ps1'; Danger = $true
+       Note = 'サイズの提供状況と vCPU クォータを確認する。停止中に、RDP / Bastion / SSH の接続が切れる。'
+       Params = @($rg, $vm,
+            @{ Name = 'VmSize'; Prompt = '変更後のサイズ'; Required = $true },
+            @{ Name = 'WhatIf'; Prompt = '変更せず、チェックだけを行う'; Kind = 'Switch'; Default = $true }) },
     @{ Label = 'Open-VMPort     : VM の受信ポートを開ける（NSG ルール追加。送信元の IP 制限つき）'; Script = 'Open-VMPort.ps1'; Danger = $true
        Note = 'Windows VM と 3389 は、送信元の IP 制限が必須（全許可は拒否）。自分の IP は -MyIp で自動取得（api.ipify.org に問い合わせる）。'
        Params = @($rg, $vm,

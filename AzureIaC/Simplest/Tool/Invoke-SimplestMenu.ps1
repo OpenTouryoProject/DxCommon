@@ -23,6 +23,8 @@ $loc = @{ Name = 'Location'; Prompt = 'リージョン'; Default = $DefaultLocat
 $size = @{ Name = 'VmSize'; Prompt = 'VM サイズ'; Default = $DefaultVmSize }
 $os = @{ Name = 'OS'; Prompt = 'OS イメージ'; Kind = 'Choice'; Choices = @($VmImages.Keys); Default = $DefaultOS }
 $noShut = @{ Name = 'NoAutoShutdown'; Prompt = '自動シャットダウンを設定しない'; Kind = 'Switch'; Default = $false }
+$disk = @(@{ Name = 'OsDiskSizeGb'; Prompt = 'OS ディスク（C ドライブ）のサイズ GB（空 = イメージの既定）' },
+          @{ Name = 'OsDiskType'; Prompt = 'OS ディスクの種類（StandardSSD_LRS / Premium_LRS / Standard_LRS。空 = Azure の既定）' })
 $xrdp = @{ Name = 'InstallXrdp'; Prompt = 'Linux に xfce4 と xrdp をインストールする（Ubuntu2204 のみ）'; Kind = 'Switch'; Default = $false }
 $cred = '管理者のユーザー名・パスワードは、実行時に入力を求められる。'
 
@@ -41,11 +43,11 @@ $commands = @(
     @{ Label = 'New-JumpboxVM    : Jumpbox VM を作成（パブリック IP なし）'; Script = 'New-JumpboxVM.ps1'; Danger = $true; Note = $cred
        Params = @($loc,
             @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'AzureBastionRG' },
-            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'JumpboxVM1' }, $size, $os, $noShut, $xrdp) },
+            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'JumpboxVM1' }, $size, $os, $noShut, $xrdp, $disk[0], $disk[1]) },
     @{ Label = 'New-Sandbox      : サンドボックス（RG / VNet / VM）を作成'; Script = 'New-Sandbox.ps1'; Danger = $true; Note = $cred
        Params = @($loc,
             @{ Name = 'ResourceGroupName'; Prompt = 'リソースグループ'; Default = 'YourRG' },
-            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'YourVM1' }, $size, $os, $noShut, $xrdp) },
+            @{ Name = 'VmName'; Prompt = 'VM 名'; Default = 'YourVM1' }, $size, $os, $noShut, $xrdp, $disk[0], $disk[1]) },
     @{ Label = 'New-VnetPeering  : Bastion VNet とサンドボックス VNet をピアリング'; Script = 'New-VnetPeering.ps1'; Danger = $true
        Params = @(
             @{ Name = 'BastionResourceGroupName'; Prompt = 'Bastion 側リソースグループ'; Default = 'AzureBastionRG' },

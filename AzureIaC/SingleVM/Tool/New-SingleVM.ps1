@@ -17,6 +17,12 @@
 .PARAMETER SshKeyPath
     Linux 用の秘密鍵のパス。既定: ~/.ssh/<VmName>。公開鍵は <SshKeyPath>.pub。
 
+.PARAMETER OsDiskSizeGb
+    OS ディスク（C ドライブ）のサイズ（GB）。省略すると、イメージの既定（Windows は 127 GB）。大きくすると、C ドライブも自動で広げる。
+
+.PARAMETER OsDiskType
+    OS ディスクの種類（SKU）。StandardSSD_LRS / Premium_LRS / Standard_LRS。省略すると、Azure の既定。
+
 .PARAMETER InstallXrdp
     Linux（Ubuntu2204）に、xfce4 と xrdp をインストールする（Run Command。数分かかる）。
     3389 の受信は開けないので、必要なら Open-VMPort.ps1 で、接続元を絞って開ける。
@@ -42,7 +48,9 @@ param(
     [string]$SshKeyPath,
     [switch]$InstallXrdp,
     [string]$SourceAddressPrefix,
-    [switch]$MyIp
+    [switch]$MyIp,
+    [int]$OsDiskSizeGb,
+    [ValidateSet('StandardSSD_LRS', 'Premium_LRS', 'Standard_LRS')][string]$OsDiskType
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'SingleVM.Common.ps1')
@@ -84,10 +92,11 @@ $nic = New-AzNetworkInterface -ResourceGroupName $ResourceGroupName -Name "${VmN
     -SubnetId $vnet.Subnets[0].Id -PublicIpAddressId $pip.Id -NetworkSecurityGroupId $nsg.Id
 
 # VM
-$cfg = New-VmConfig $VmName $VmSize $img $cred $nic.Id $pubKey
+$cfg = New-VmConfig $VmName $VmSize $img $cred $nic.Id $pubKey $OsDiskSizeGb $OsDiskType
 
 Say "  VM '$VmName' を作成します（数分かかります）" -Color Cyan
 $null = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $cfg
+if ($OsDiskSizeGb -gt 0 -and -not $img.IsLinux) { Expand-WindowsOsPartition $ResourceGroupName $VmName }
 
 if ($InstallXrdp) { Install-Xrdp $ResourceGroupName $VmName $cred }
 

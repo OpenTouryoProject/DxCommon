@@ -60,3 +60,12 @@ az lock delete --name dx-cannotdelete --resource-group $rg
 - `ReadOnly` を付けた RG に、新しい VM を作る、Public IP を付ける、`Set-StorageSecurity` を実行する、などは、すべて拒否される。先に外す。
 - ロックは、**RG を削除する、`Remove-Simplest.ps1` などの片付けも止める**。片付けの前に外す。
 - Azure Policy は、今回は調べただけで、Tool には含めていない。
+
+## 実機の運用例（2026-11-23）
+
+- `AzureOpneAI_RG`（Azure OpenAI アカウントと AIServices アカウント）に、`ReadOnly` を付けた。
+  - 付ける前に、アクティビティ ログ（過去 89 日）を確認: イベントは 0 件（書き込み・削除・`listKeys` なし）。
+  - **推論（API 呼び出し）は、データ プレーンなので、ロックの影響を受けない**。止まるのは、デプロイの作成・変更・削除、アカウント設定の変更、API キーの取得（`listKeys`）と再生成、Foundry のプロジェクトや接続の追加など、ARM を通る操作。
+  - アクティビティ ログは、データ プレーンの呼び出しを記録しない。また、保持は 90 日まで。アプリの実際の稼働は、利用者側で確認する。
+  - 戻し方: `Remove-ResourceLock.ps1 -ResourceGroupName AzureOpneAI_RG -LockName dx-readonly`。
+- 運用の考え方: VM を起動・停止する RG は `CanNotDelete`、設定が落ち着いている RG（変更が数か月無いもの）は `ReadOnly`。RG ごと削除して片付けるときは、先にロックを外す。
