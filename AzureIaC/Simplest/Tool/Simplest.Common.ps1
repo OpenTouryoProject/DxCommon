@@ -128,7 +128,11 @@ function Show-ErrorHint([string]$Message) {
         Say ("    Connect-AzAccount -Tenant {0}" -f $tenant) -Color White
         Say '    （エラーに ClaimsChallenge が示されていれば、そのコマンドをそのまま実行する）' -Color DarkGray
     }
-    elseif ($Message -match 'NotFound|MissingSubscriptionRegistration|not registered|NoRegisteredProviderFound') {
+    elseif ($Message -match 'ResourceNotFound|ResourceGroupNotFound|was not found|could not be found|NotFound') {
+        Say '  [ヒント] 指定した名前のリソースが見つかりません。リソースグループ名と、リソース名（VM 名など）を確認してください。' -Color Yellow
+        Say '    ※ VM の「リソース名」は、Windows の「コンピューター名」と違うことがあります（復元した VM など）。Get-AzVM -ResourceGroupName <RG> で、実際の名前を確認できます。' -Color DarkGray
+    }
+    elseif ($Message -match 'MissingSubscriptionRegistration|not registered|NoRegisteredProviderFound') {
         Say '  [ヒント] リソースプロバイダーが未登録の可能性があります。Test-Prerequisites を実行し、-Register で登録してください。' -Color Yellow
     }
     elseif ($Message -match 'AuthorizationFailed|does not have authorization|403|Forbidden|accessDenied') {

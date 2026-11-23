@@ -29,6 +29,9 @@
 | `Remove-VMPublicIp.ps1` | - | VM から Public IP を外して削除する |
 | `Disable-LocalLogin.ps1` | - | Windows VM のローカル管理者のログインを止める（Entra ID のみにする）。`DenyRdp`（RDP ログオン拒否）/ `DisableAccount`。`-Enable` で戻す。止める前に、締め出し防止のチェックをする |
 | `Set-VMUac.ps1` | - | Windows VM の UAC を無効にする（`Full`: EnableLUA=0・再起動 / `NoPrompt`: 昇格の確認だけ出さない）。`-Enable` で戻す。セキュリティ低下のため確認あり |
+| `Install-VMWsl.ps1` | - | Windows VM に、WSL2 の土台を入れる（機能の有効化 → 再起動 → WSL 本体の MSI）。ディストリビューションは、ユーザーが、ログインして入れる（Run Command の SYSTEM では、WSL を実行できない） |
+| `Backup-VM.ps1` | - | VM のディスクの、増分スナップショットを取る（バックアップ）。`-StopVm` で停止してから取る（確実）。何も削除しない |
+| `Restore-VM.ps1` | - | スナップショットから、新しい VM を別 RG に作る（復元）。Entra ID のログインは、`Enable-EntraLogin.ps1` をやり直す |
 | `Set-VMLocale.ps1` | - | VM の言語・ロケール・タイムゾーンを設定する（既定: 日本語 / 東京。Windows と Ubuntu）。Run Command で行い、インターネットに出られない VM には、一時的な Public IP を付けて、終わったら削除する。Windows は `-LanguageSourceAccount` / `-LanguageSourceBlob` で、Storage に置いた「Languages and Optional Features」ISO から入れられる（Windows Update を使わない） |
 | `Set-VMSize.ps1` | - | VM のサイズ（SKU）を変更する。サイズの提供状況と vCPU クォータを確認し、停止 → 変更 → 起動 の順に行う |
 | `Open-VMPort.ps1` | `az vm open-port` | VM の NSG に、受信を許可するルールを追加する。Windows VM と 3389 は、送信元の IP 制限が必須（`-SourceAddressPrefix` か `-MyIp`） |

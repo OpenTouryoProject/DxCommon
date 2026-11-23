@@ -95,7 +95,8 @@ if ($RdpFilePath) {
     if (-not $ip) { throw 'この VM にはパブリック IP がありません。.rdp を書き出せません。' }
     # Web アカウントでのサインインは、接続先に IP アドレスを使えず、Entra ID のデバイス名（コンピューター名）と一致する名前が必要。
     # （FQDN や、Public IP の DNS 名は、デバイスが見つからず AADSTS293004 になる）。名前を IP に解決できるよう、手元の PC の hosts に足す。
-    $hostName = $vmObj.OSProfile.ComputerName
+    $hostName = Get-VmComputerName $vmObj
+    if (-not $hostName) { throw 'コンピューター名を取得できませんでした。' }
     $lines = @("full address:s:$hostName", 'prompt for credentials:i:1', 'enablerdsaadauth:i:1', 'targetisaadjoined:i:1')
     if ($upn) { $lines += "username:s:AzureAD\$upn" }
     Set-Content -Path $RdpFilePath -Value $lines -Encoding ASCII
@@ -106,9 +107,5 @@ Say ''
 Say "完了: VM '$VmName' で、Entra ID のログインを使えるようにしました。" -Color Green
 Say '  - ロールの反映に数分かかることがあります。' -Color DarkGray
 Say '  - 3389 は、Open-VMPort.ps1 -MyIp などで、自分の IP を絞って開けてください。' -Color DarkGray
-if ($hostName) {
-    Say "  - 接続先: $hostName（Entra ID のデバイス名。IP や FQDN は使えません）" -Color DarkGray
-    Say "  - 手元の PC で、管理者権限の PowerShell から、次を 1 回実行してください（hosts に名前解決を足す）:" -Color Yellow
-    Say ('      Add-Content C:\Windows\System32\drivers\etc\hosts "{0} {1}"' -f $ip, $hostName) -Color White
-}
-elseif ($ip) { Say "  - 接続先: $ip" -Color DarkGray }
+if ($ip) { Show-EntraHostsHint $vmObj $ip }
+else { Say '  - パブリック IP がありません。Add-VMPublicIp.ps1 -OpenPort 3389 -MyIp で付けると、接続先と hosts のコマンドを表示します。' -Color DarkGray }

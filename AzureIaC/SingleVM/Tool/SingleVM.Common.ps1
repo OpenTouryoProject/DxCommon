@@ -126,7 +126,11 @@ function Show-ErrorHint([string]$Message) {
         Say ("    Connect-AzAccount -Tenant {0}" -f $tenant) -Color White
         Say '    （エラーに ClaimsChallenge が示されていれば、そのコマンドをそのまま実行する）' -Color DarkGray
     }
-    elseif ($Message -match 'NotFound|MissingSubscriptionRegistration|not registered|NoRegisteredProviderFound') {
+    elseif ($Message -match 'ResourceNotFound|ResourceGroupNotFound|was not found|could not be found|NotFound') {
+        Say '  [ヒント] 指定した名前のリソースが見つかりません。リソースグループ名と、リソース名（VM 名など）を確認してください。' -Color Yellow
+        Say '    ※ VM の「リソース名」は、Windows の「コンピューター名」と違うことがあります（復元した VM など）。Get-AzVM -ResourceGroupName <RG> で、実際の名前を確認できます。' -Color DarkGray
+    }
+    elseif ($Message -match 'MissingSubscriptionRegistration|not registered|NoRegisteredProviderFound') {
         Say '  [ヒント] リソースプロバイダーが未登録の可能性があります。Test-Prerequisites を実行し、-Register で登録してください。' -Color Yellow
     }
     elseif ($Message -match 'AuthorizationFailed|does not have authorization|403|Forbidden|accessDenied') {
@@ -219,6 +223,33 @@ function Get-VmPublicIp($Vm) {
     if (-not $pipId) { return $null }
     $r = Split-ResourceId $pipId
     return (Get-AzPublicIpAddress -ResourceGroupName $r.ResourceGroupName -Name $r.Name).IpAddress
+}
+
+# VM の「コンピューター名」（Windows の中の名前）を返す。Azure の VM 名（リソース名）とは、別のもの。
+#   通常の VM は OSProfile.ComputerName。スナップショットから復元した VM（ディスクを接続して作った VM）は、OSProfile が空のため、
+#   VM の中（Run Command）で、$env:COMPUTERNAME を読む（起動している必要がある）。取れなければ $null。
+function Get-VmComputerName($Vm) {
+    if ($Vm.OSProfile -and $Vm.OSProfile.ComputerName) { return $Vm.OSProfile.ComputerName }
+    try {
+        $out = Invoke-VmCommand $Vm.ResourceGroupName $Vm.Name 'RunPowerShellScript' '$env:COMPUTERNAME'
+        $name = ($out -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
+        if ($name) { return $name.Trim() }
+    }
+    catch { }
+    return $null
+}
+
+# Entra ID の RDP ログイン用に、手元の PC の hosts に足すコマンドを表示する。
+#   Web アカウントのサインインは、接続先に IP や FQDN を使えず、コンピューター名と一致する名前が必要。
+function Show-EntraHostsHint($Vm, [string]$Ip) {
+    if (-not $Ip) { return }
+    $computer = Get-VmComputerName $Vm
+    if (-not $computer) { Say '  ※ コンピューター名を取得できませんでした（VM が起動していない可能性）。' -Color Yellow; return }
+    Say ("  - 接続先: {0}（Windows のコンピューター名。Entra ID のデバイス名で、IP や FQDN は使えません）" -f $computer) -Color DarkGray
+    if ($computer -ne $Vm.Name) { Say ("    ※ Azure の VM 名（{0}）とは、別の名前です。" -f $Vm.Name) -Color Yellow }
+    Say '  - 手元の PC で、管理者権限の PowerShell から、次を実行してください（hosts に名前解決を足す）:' -Color Yellow
+    Say ('      Add-Content C:\Windows\System32\drivers\etc\hosts "{0} {1}"' -f $Ip, $computer) -Color White
+    Say ("    ※ 同じ名前（{0}）の行が、すでにある場合（元の VM など）は、その行の IP を書き換えてください。" -f $computer) -Color DarkGray
 }
 
 # VM の 1 つ目の NIC に付いた NSG を返す（無ければ例外）。

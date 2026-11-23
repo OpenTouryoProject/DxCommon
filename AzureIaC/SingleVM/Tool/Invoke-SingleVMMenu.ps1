@@ -67,6 +67,25 @@ $commands = @(
             @{ Name = 'LanguageSourceAccount'; Prompt = '（Windows）言語パック ISO を置いた Storage アカウント名（空 = Windows Update を使う）' },
             @{ Name = 'LanguageSourceBlob'; Prompt = '（Windows）ISO の BLOB 名（上を指定したとき）' },
             @{ Name = 'NoRestart'; Prompt = 'Windows を再起動しない'; Kind = 'Switch'; Default = $false }) },
+    @{ Label = 'Install-VMWsl      : Windows VM に WSL2 の土台（機能 + WSL 本体）を入れる'; Script = 'Install-VMWsl.ps1'; Danger = $true
+       Note = '機能の有効化 → 再起動 → WSL 本体（MSI、約 350 MB）の導入。ディストリビューションは、ユーザーが、ログインして入れる（SYSTEM では WSL を実行できない）。'
+       Params = @($rg, $vm,
+            @{ Name = 'NoRestart'; Prompt = '再起動しない（本体の導入は、後で再実行）'; Kind = 'Switch'; Default = $false }) },
+    @{ Label = 'Backup-VM          : VM のディスクのスナップショットを取る（バックアップ）'; Script = 'Backup-VM.ps1'; Danger = $true
+       Note = '取る前に VM を停止すると確実（-StopVm）。何も削除しない。復元は Restore-VM。'
+       Params = @($rg, $vm,
+            @{ Name = 'SnapshotResourceGroupName'; Prompt = 'スナップショットを置く RG（空 = VM と同じ）' },
+            @{ Name = 'StopVm'; Prompt = '取る前に VM を停止する（推奨）'; Kind = 'Switch'; Default = $true },
+            @{ Name = 'StartAfter'; Prompt = '取った後に VM を起動し直す'; Kind = 'Switch'; Default = $false }) },
+    @{ Label = 'Restore-VM         : スナップショットから、新しい VM を別 RG に作る（復元）'; Script = 'Restore-VM.ps1'; Danger = $true
+       Note = '課金が発生する。Entra ID のログインは、Enable-EntraLogin をやり直す。元の VM と、同じ名前・SID になるため、別の VNet に作る。'
+       Params = @(
+            @{ Name = 'SnapshotResourceGroupName'; Prompt = 'スナップショットの RG'; Required = $true },
+            @{ Name = 'SnapshotName'; Prompt = 'スナップショット名（OS ディスク）'; Required = $true },
+            @{ Name = 'TargetResourceGroupName'; Prompt = '復元先の RG（無ければ作る）'; Default = 'RestoredRG' },
+            @{ Name = 'NewVmName'; Prompt = '新しい VM 名'; Default = 'RestoredVM1' },
+            @{ Name = 'VmSize'; Prompt = 'VM サイズ（空 = 元と同じ）' },
+            @{ Name = 'PublicIp'; Prompt = 'Public IP を付ける'; Kind = 'Switch'; Default = $false }) },
     @{ Label = 'Set-VMSize         : VM のサイズ（SKU）を変更（停止 → 変更 → 起動）'; Script = 'Set-VMSize.ps1'; Danger = $true
        Note = 'サイズの提供状況と vCPU クォータを確認する。停止中に、RDP / Bastion / SSH の接続が切れる。'
        Params = @($rg, $vm,

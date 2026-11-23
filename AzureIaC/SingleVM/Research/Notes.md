@@ -189,3 +189,35 @@ Restart-Computer
 - 対策: ISO をダウンロードする前に、言語パック本体（`Installed`）と `Language.*` を確認する。すべて入っていれば、ISO を使わない。言語パック本体が入っていれば、`Add-WindowsPackage` は飛ばし、足りない `Language.*` だけを ISO から入れる。
 - 再実行の結果: `note: language pack and features are already installed (ISO skipped)`。ダウンロード無し、約 5.9 分（再起動 2 回が中心）。ja-JP / 東京 / `Language.*` 5 種は、そのまま。ISO・マウントの残りなし。
 - 残る改善点: ISO を飛ばしたときも、再起動を 2 回している（なくても動くはずだが、未検証）。
+
+### 日本語化の確認状況（2026-11-23）
+- 利用者が `YourVM1` で確認した: Entra ID ユーザーの、ログイン後の表示言語（ユーザー単位の設定）と、日本語入力（IME / キーボード）。
+- 未確認: Windows Server 2019 / 2022 の ISO 方式（ISO は 2025 用のみ。ファイル名などが違う可能性）、ja-JP 以外の言語、Linux（Ubuntu）の実機、ISO を飛ばしたときの再起動の省略。
+
+## WSL2 を外から入れる（Install-VMWsl.ps1、YourVM1、2026-11-23、実機）
+
+- 前提: `Standard_D4s_v4`（Dsv4）で、ハイパーバイザーが見える（`HypervisorPresent=True`）。入れ子の仮想化が使える。
+- 外（Run Command）からできたこと: `Microsoft-Windows-Subsystem-Linux` / `VirtualMachinePlatform` の有効化と、再起動。**WSL 本体の導入**。
+- **外からできなかったこと**:
+  - `wsl --install` / `wsl --update`（SYSTEM では、「ハンドルが無効です」「管理者特権が必要です」で失敗）。機能を有効にしただけでは、`wsl.exe` は「WSL が入っていない」状態（`'wsl.exe --install' を実行してください`）。
+  - `wsl --status` など、WSL の実行そのもの（`Wsl/WSL_E_LOCAL_SYSTEM_NOT_SUPPORTED`: ローカル システムとして WSL を実行することは、サポートされていない）。
+  - ディストリビューション（Ubuntu など）の導入と初期化 → ユーザーが、ログインして `wsl --install -d Ubuntu`。
+- 代わりの方法: GitHub の microsoft/WSL の最新リリースの MSI（`wsl.<ver>.x64.msi`、約 350 MB）を、直接 `msiexec /i ... /qn /norestart` で入れる。`WSL 3.0.5.0`、カーネル `6.18.58.1-1`、`wsl --version` は成功した（`C:\Program Files\WSL\wsl.exe`）。
+- 日本語環境の `wsl.exe` の出力は UTF-16 で、Run Command で文字化けする。確認は、ファイルの有無、バージョン、終了コードで行うか、`\uXXXX` の形に直して取り出す。
+- **未確認**: ユーザーとしてログインして、`wsl --install -d Ubuntu` が通るか。
+
+## バックアップとリストア（Backup-VM.ps1 / Restore-VM.ps1、2026-11-23、実機）
+
+- `Backup-VM.ps1 -StopVm`: VM を停止（割り当て解除）してから、OS ディスク（256 GB、Standard SSD）の**増分スナップショット**（Standard_LRS）を `YourRG` に取った（`YourVM1-os-<日時>`）。復元に使う情報（VM サイズ、OS、Hyper-V 世代など）は、タグに残す。VM やディスクは、削除しない。
+- `Restore-VM.ps1`: スナップショットから、別の RG（`RestoredRG`）に、ディスク → NIC → VM（`RestoredVM1`、`Standard_D2s_v4`、Public IP なし、新しい VNet 10.2.0.0/16、起動診断なし）を作った。
+- 復元した VM の確認: 起動した。コンピューター名は、元と同じ（`YourVM1`）。日本語（ja-JP / 東京）、UAC 無効（`EnableLUA=0`）、WSL の機能と本体（`wsl.exe`）は、そのまま残った。`AADLoginForWindows` のファイルは、ディスクに残っているが、**VM の拡張機能としては、新しい VM に付いていない（ID とロールも新規）**ため、`Enable-EntraLogin.ps1` のやり直しが要る（未実施）。
+- つまずき: `New-AzSnapshotConfig -Tag` に渡すタグの値は、純粋な文字列にする（`$vm.HardwareProfile.VmSize` などのままだと、PSObject の変換で失敗する）。
+- 課金: スナップショットは、ストレージの料金がかかる（金額は、請求で確認する）。停止中の VM でも、ディスクの課金は続くため、遊休が長いときは、スナップショットを取って、VM とディスクを削除する（`YourRG` の `CanNotDelete` ロックを、先に外す）。
+- 注意: 元の VM と、同じコンピューター名・SID の VM が、もう 1 つできる。同じネットワークに、同時に置かない。
+
+
+### 復元した VM（RestoredVM1）への接続確認（2026-11-23、利用者が確認）
+- 復元した VM に、`Enable-EntraLogin.ps1`（ID、拡張、ロール）と `Add-VMPublicIp.ps1 -OpenPort 3389 -MyIp` を実行し、mstsc で Entra ID のログインに成功した。接続先は、コンピューター名（`YourVM1`）で、手元の hosts に `<新しい IP> YourVM1` を書いた。
+- ログイン後、`wsl --version` で、WSL2 が認識された（外から入れた MSI と機能の有効化で、使える状態になっている）。
+- 復元した VM は、Azure のリソース名（`RestoredVM1`）と、Windows のコンピューター名（`YourVM1`）が違う。ツールの `VmName` には、リソース名を指定する。hosts のコマンドは、`Enable-EntraLogin.ps1` / `Add-VMPublicIp.ps1` が、コンピューター名つきで表示する（`Get-VmComputerName`）。
+- 以上で、「バックアップ（スナップショット）→ 別 RG に復元 → Entra ID ログインを再設定 → 接続」の流れが、実機で通った。

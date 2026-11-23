@@ -93,3 +93,8 @@ $ip = Get-VmPublicIp (Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VmNa
 Say ''
 Say "完了: VM '$VmName' のパブリック IP: $ip" -Color Green
 if (-not $OpenPort) { Say '  受信は何も許可していません。Open-VMPort.ps1 で、送信元を絞って開けてください。' -Color DarkGray }
+# Entra ID ログインを入れた Windows VM なら、接続先（コンピューター名）と、hosts に足すコマンドを表示する
+$vmNow = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VmName
+if (-not (Test-VmIsLinux $vmNow) -and (Get-AzVMExtension -ResourceGroupName $ResourceGroupName -VMName $VmName -Name 'AADLoginForWindows' -ErrorAction SilentlyContinue)) {
+    Show-EntraHostsHint $vmNow $ip
+}
