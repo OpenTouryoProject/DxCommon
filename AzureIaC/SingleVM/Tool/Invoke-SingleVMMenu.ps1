@@ -64,6 +64,8 @@ $commands = @(
        Note = 'Run Command で VM の中を設定する。インターネットに出られない VM には、一時的な Public IP を付けて、終わったら削除する。Windows は再起動する。数分〜10 分以上かかる。'
        Params = @($rg, $vm,
             @{ Name = 'Language'; Prompt = '言語'; Default = 'ja-JP' },
+            @{ Name = 'LanguageSourceAccount'; Prompt = '（Windows）言語パック ISO を置いた Storage アカウント名（空 = Windows Update を使う）' },
+            @{ Name = 'LanguageSourceBlob'; Prompt = '（Windows）ISO の BLOB 名（上を指定したとき）' },
             @{ Name = 'NoRestart'; Prompt = 'Windows を再起動しない'; Kind = 'Switch'; Default = $false }) },
     @{ Label = 'Set-VMSize         : VM のサイズ（SKU）を変更（停止 → 変更 → 起動）'; Script = 'Set-VMSize.ps1'; Danger = $true
        Note = 'サイズの提供状況と vCPU クォータを確認する。停止中に、RDP / Bastion / SSH の接続が切れる。'

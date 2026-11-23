@@ -180,7 +180,8 @@ PUT /subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Network/bastion
 | OS ディスク | **256 GB / `StandardSSD_LRS` / 1 本**（データ ディスクなし）。C ドライブは 255.5 GB（空き 237.3 GB。作成後に拡張） |
 | ネットワーク | 作成時は Public IP なし、NSG なし（Bastion の VNet とピアリング。Bastion 削除後は、下の「設定の追記」で Public IP + NSG を追加） |
 | 管理者 | `azureuser`（パスワードは自動生成。控えは別管理）。RDP は、下記のとおり拒否済み |
-| 言語 / 時刻 | 未設定（英語 / UTC） |
+| 言語 / 時刻 | **日本語（ja-JP）/ 東京**（2026-11-23、`Set-VMLocale.ps1`。Windows Update 経由、約 40 分）。`Language.*` の 5 種も入っている |
+| UAC | **無効**（`EnableLUA=0`、`Set-VMUac.ps1 -Mode Full`。2026-11-23） |
 | 自動シャットダウン | 1500 UTC（JST 0 時） |
 | 作成コマンド | `New-Sandbox.ps1 -OS Win2025Datacenter -VmSize Standard_D4s_v4 -OsDiskSizeGb 256 -OsDiskType StandardSSD_LRS -Credential <資格情報>` |
 
@@ -191,6 +192,9 @@ Bastion（`AzureBastionRG`）を削除した後、`YourVM1` を次の順で設�
 3. `Add-VMPublicIp.ps1 -OpenPort 3389 -MyIp`（Public IP `YourVM1PublicIP`（Standard / 静的）、NSG `YourVM1NSG`、3389 の送信元は自分の IP だけ）。
 4. mstsc で Entra ID ログイン（接続先はコンピューター名 `YourVM1` + hosts に `<IP> YourVM1`、`AzureAD\<UPN>`）。
 5. `Disable-LocalLogin.ps1 -Mode DenyRdp`（ローカル `azureuser` の RDP を拒否）。Entra ID で再ログインできることを確認した。
+6. `Set-VMLocale.ps1`（日本語化）→ `Set-VMUac.ps1 -Mode Full`（UAC 無効、再起動）。UAC 無効の後も、Entra ID の RDP ログインができた（利用者が確認、2026-11-23）。
+
+関連（`YourRG` に置いたもの、2026-11-23）: Storage `yourstorage1123`（コンテナー `langpack`、TLS 1.2、匿名アクセス無し）。言語パックの ISO（`windows-server-2025/…LOF_PACKAGES_OEM.iso`、6.39 GB）を置いた。`YourRG` は長期に残す RG とし、`CanNotDelete` のロック `dx-cannotdelete` を付けた（RG 削除の前に、外す）。
 
 分かったこと:
 - `-UserPrincipalName` を省くと、**ロールは付かない**（拡張と ID だけ）。`Disable-LocalLogin.ps1` は、管理者ロールが無いと中止する（締め出し防止）。

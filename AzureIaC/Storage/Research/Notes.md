@@ -24,3 +24,12 @@
 ## 起動診断用のストレージ
 
 - VM を作ると、同じリージョンに標準ストレージが無い場合、起動診断用に `azureazure...` が自動で作られる（実機: `azureazurebwork112220460`）。Monitor の `Show-InboundSecurity` に出てくる。TLS 1.2 にしても、VM の起動診断は問題なし。
+
+## 言語パックの ISO を置く（yourstorage1123、2026-11-23）
+
+- `YourRG` に、`yourstorage1123` を作った（`yourstorage` は、世界中で一意でなければならず、すでに使われていたため、数字を足した。名前は、小文字と数字のみ）。コンテナーは `langpack`。TLS 1.2、匿名アクセス無し、HTTPS のみ。
+- 認証は Entra ID（`Storage Blob Data Contributor`）。`New-StorageAccount.ps1` が、実行者に付ける。ロールの反映には、数分かかる。
+- 6.39 GB の ISO を、約 10 分でアップロードできた（`Send-StorageFile.ps1`）。保管料金は、小さい（金額は、請求で確認する）。
+- VM には、期限 3 時間の読み取り専用 SAS（ユーザー委任）を渡す。ダウンロードは、約 60〜70 秒。
+- Monitor（`Show-InboundSecurity.ps1`）は、ネットワーク規則の既定が `Allow` のため、「注意: 全許可」と表示する。匿名アクセスは無効、認証は必須。ネットワークを絞るかは、別に決める。
+

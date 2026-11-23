@@ -69,3 +69,5 @@ az lock delete --name dx-cannotdelete --resource-group $rg
   - アクティビティ ログは、データ プレーンの呼び出しを記録しない。また、保持は 90 日まで。アプリの実際の稼働は、利用者側で確認する。
   - 戻し方: `Remove-ResourceLock.ps1 -ResourceGroupName AzureOpneAI_RG -LockName dx-readonly`。
 - 運用の考え方: VM を起動・停止する RG は `CanNotDelete`、設定が落ち着いている RG（変更が数か月無いもの）は `ReadOnly`。RG ごと削除して片付けるときは、先にロックを外す。
+- `YourRG`（長期に残す作業用の RG。VM、VNet、Storage）に、`CanNotDelete` を付けた（`dx-cannotdelete`）。VM の起動・停止や設定変更は、そのまま通る。RG ごとの削除（`Remove-Simplest.ps1` など）は、先にロックを外す。一時 Public IP などの削除も、ロックの対象になる点に注意する。
+

@@ -26,6 +26,7 @@ Azure Storage（ストレージアカウントと BLOB コンテナ）を構築�
 | `New-StorageAccount.ps1` | Creating | RG、ストレージアカウント、自分への `Storage Blob Data Contributor` ロール、コンテナを作成する |
 | `Add-StorageNetworkRule.ps1` | Add as needed | ネットワークルールに、許可する IP アドレスを追加する |
 | `Set-StorageSecurity.ps1` | - | 最小 TLS を 1.2 に上げる（`-DisableBlobPublicAccess` で匿名アクセスも無効化）。`-WhatIf` で対象だけ確認できる |
+| `Send-StorageFile.ps1` | - | ローカルのファイルを、コンテナー（既定 `langpack`）にアップロードする（Entra ID 認証）。言語パックの ISO を置いて、SingleVM の `Set-VMLocale.ps1 -LanguageSourceAccount / -LanguageSourceBlob` で使う |
 | `Show-Storage.ps1` | - | アカウント、ロール割り当て、コンテナ、ネットワークルールを表示する（読み取り専用） |
 | `Remove-StorageAccount.ps1` | - | ストレージアカウント（または、リソースグループごと）を削除する |
 

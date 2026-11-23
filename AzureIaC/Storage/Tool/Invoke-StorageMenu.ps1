@@ -42,6 +42,12 @@ $commands = @(
             @{ Name = 'StorageAccountName'; Prompt = 'ストレージアカウント名（空 = 対象範囲のすべて）' },
             @{ Name = 'DisableBlobPublicAccess'; Prompt = 'BLOB の匿名アクセスも無効にする'; Kind = 'Switch'; Default = $false },
             @{ Name = 'WhatIf'; Prompt = '変更せず、対象だけを表示する'; Kind = 'Switch'; Default = $true }) },
+    @{ Label = 'Send-StorageFile       : ローカルのファイルを BLOB にアップロード（言語パックの ISO など）'; Script = 'Send-StorageFile.ps1'; Danger = $true
+       Note = 'Entra ID 認証（Storage Blob Data のロールが必要）。大きなファイルは時間がかかる。同名の BLOB は、確認して上書きする。'
+       Params = @($rg, $sa,
+            @{ Name = 'ContainerName'; Prompt = 'コンテナー'; Default = 'langpack' },
+            @{ Name = 'FilePath'; Prompt = 'アップロードするファイルのパス'; Required = $true },
+            @{ Name = 'BlobName'; Prompt = 'BLOB 名（空 = windows-server-2025/<ファイル名>）' }) },
     @{ Label = 'Show-Storage           : 状態を表示（読み取り専用）'; Script = 'Show-Storage.ps1'; Danger = $false
        Params = @($rg, $sa) },
     @{ Label = 'Remove-StorageAccount  : ストレージアカウントを削除'; Script = 'Remove-StorageAccount.ps1'; Danger = $true; Destroy = $true

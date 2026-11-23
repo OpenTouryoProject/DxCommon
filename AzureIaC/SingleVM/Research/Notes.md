@@ -161,3 +161,31 @@ Restart-Computer
 - ただし、`Language.Basic / Handwriting / OCR / Speech / TextToSpeech` に当たる独立した `.cab` は、残っていなかった。更新プログラムのパッケージ（`Windows11.0-KB…-x64.wim`、約 190 MB など）の中にあるように見える（推測）。`Download` 直下のハッシュ名のファイルは、`MZ`（実行ファイル）で、言語パックではなかった。
 - 更新プログラムのビルド（26100.33828）に依存し、フォルダー構成も ISO と違う。`-Source` として使えるかは未検証（同じ VM では、すでに入っているため、検証にならない）。**再利用には向かないと判断し、ISO 方式を本命にする。**
 - 日本語化（Windows Update 経由）は、この回、約 40 分だった。
+
+### Storage の ISO から日本語化（実機で確認、2026-11-23）
+- ISO: `26100.1.240331-1435.ge_release_amd64fre_SERVER_LOF_PACKAGES_OEM.iso`（Languages and Optional Features、6.39 GB）。`LanguagesAndOptionalFeatures\` に、`Microsoft-Windows-Server-Language-Pack_x64_ja-jp.cab` と、`Microsoft-Windows-LanguageFeatures-{Basic,Handwriting,OCR,Speech,TextToSpeech}-ja-jp-Package~...cab` があった（ja-jp は 91 ファイル）。OS 用の `SERVER_EVAL_..._ja-jp.iso` は、言語パックの用途には使わない。
+- Storage（`yourstorage1123/langpack/windows-server-2025/`）へのアップロード: 約 10 分（Entra ID 認証、`Set-AzStorageBlobContent -UseConnectedAccount`）。
+- `Set-VMLocale.ps1 -LanguageSourceAccount <acct> -LanguageSourceBlob <blob>`: 期限 3 時間の読み取り専用 SAS（ユーザー委任）を作り、VM が ISO をダウンロード（約 60〜70 秒）→ マウント → `Add-WindowsPackage`（言語パック本体）→ `Add-WindowsCapability -Source <ISO> -LimitAccess`（`Language.*` 5 種）→ ISO 削除。**再起動してから**、`Set-SystemPreferredUILanguage` などを設定し、最後にもう一度再起動する。全体で約 18 分（Windows Update 経由は約 40 分）。新しい VM で、一度で完走した。
+- 試験で出た問題:
+  - **Run Command のスクリプトに、日本語を入れない。** 文字化けで構文が壊れ、出力に `'locale-done'` の断片が含まれて、成功と誤判定された。ASCII だけにし、成功の判定を `(?m)^locale-done\s*$`（その行だけ）にした。
+  - 言語パック本体が、`Language.*` と同じ起動の中で入れると、システムに残らないことがあった（2 回、再現。新しい VM での最終確認では、再現しなかった）。残っていないと、`Set-SystemPreferredUILanguage` が `Value does not fall within the expected range.` で失敗し、再起動を重ねても直らない。対策: `Language.*` の後で、言語パック本体の状態を確認し、`Installed` でなければ入れ直す（それでも駄目なら、再起動の前に止まる）。原因は、確定していない（推測）。
+  - ISO は `26100.1`（初期ビルド）。VM は `26100.32230` 以降で、言語パックの組み合わせとして動いた。`Get-SystemPreferredUILanguage` の表示は `ja`（`ja-JP` でなく）。
+  - 一時 Public IP は、VM が `Updating` の最中に止められる（ローカルのメモリ不足でプロセスが終了）と、外れずに残る。再実行の前に、RG の Public IP を確認する。
+- 試験は、使い捨ての RG（`dx-langtest-rg`、`Standard_D2s_v4`）で行い、削除した。
+
+## UAC（ユーザー アカウント制御）の無効化（Set-VMUac.ps1、2026-11-23）
+
+- 実装: Run Command で、`HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System` を変更する。
+  - `Full`（既定）: `EnableLUA=0`。UAC を完全に無効にする。**再起動が必要**（ログイン済みのセッションは、再起動まで変わらない）。管理者は、確認なしで、常にフル権限で動く。Microsoft Store アプリなど、UAC を前提にした機能は、動かなくなる（一般知識、未検証）。
+  - `NoPrompt`: `ConsentPromptBehaviorAdmin=0`。UAC は有効のまま、管理者への昇格の確認だけを出さない。再起動は不要。
+  - `-Enable`: `EnableLUA=1` / `ConsentPromptBehaviorAdmin=5`（既定）に戻す。
+- セキュリティの低下になるため、確認を出す。`-WhatIf` で、現在の値だけを見られる。開発・検証用の VM に限る。
+- 実機（YourVM1）: `EnableLUA=1` → `0` に変え、再起動できた。UAC 無効の後も、Entra ID の RDP ログインができた（利用者が確認、2026-11-23）。
+- Run Command は同時に 1 つしか動かせない。日本語化の最中は、UAC の変更を待つ。
+
+
+### すでに ja-JP が入っている VM への、ISO 方式の再実行（YourVM1、2026-11-23）
+- 最初は失敗した: 言語パック本体が入っている VM に `Add-WindowsPackage` を実行すると、`0x800f0952` で失敗する（冪等ではない。原因は、入っているため、と推測）。
+- 対策: ISO をダウンロードする前に、言語パック本体（`Installed`）と `Language.*` を確認する。すべて入っていれば、ISO を使わない。言語パック本体が入っていれば、`Add-WindowsPackage` は飛ばし、足りない `Language.*` だけを ISO から入れる。
+- 再実行の結果: `note: language pack and features are already installed (ISO skipped)`。ダウンロード無し、約 5.9 分（再起動 2 回が中心）。ja-JP / 東京 / `Language.*` 5 種は、そのまま。ISO・マウントの残りなし。
+- 残る改善点: ISO を飛ばしたときも、再起動を 2 回している（なくても動くはずだが、未検証）。
