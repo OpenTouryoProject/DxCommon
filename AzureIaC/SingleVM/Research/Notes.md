@@ -155,3 +155,9 @@ Restart-Computer
   - ISO から `.cab` を手でコピーしたフォルダーは、リポジトリとして使えない。ISO のままマウントするか、`DISM /export-source` で作る。
 - 未確認: `ja-JP` が ISO に入っているか、Azure の Windows Server 2025 のビルドと ISO が合うか、Run Command（SYSTEM）での ISO のマウント（`Mount-DiskImage`）。
 - 実装の予定: ISO の Storage へのアップロード（Storage の Tool）、`Set-VMLocale.ps1` の `-LanguageSource`（短期の SAS URL で VM にダウンロード → マウント → インストール）。ISO は、利用者が手動で入手する。
+
+### `SoftwareDistribution\Download` からの取り出し（YourVM1、2026-11-23、実機）
+- `Get-ChildItem C:\Windows\SoftwareDistribution\Download -Filter "*ja-jp*" -Recurse` で、日本語化の後も、ファイルが残っていた（`<GUID>\Microsoft-Windows-Server-LanguagePack-Package~...~ja-JP~.esd` 約 41 MB と、`Microsoft-Windows-*-FOD-Package~...~ja-JP~.cab` 約 30 個）。
+- ただし、`Language.Basic / Handwriting / OCR / Speech / TextToSpeech` に当たる独立した `.cab` は、残っていなかった。更新プログラムのパッケージ（`Windows11.0-KB…-x64.wim`、約 190 MB など）の中にあるように見える（推測）。`Download` 直下のハッシュ名のファイルは、`MZ`（実行ファイル）で、言語パックではなかった。
+- 更新プログラムのビルド（26100.33828）に依存し、フォルダー構成も ISO と違う。`-Source` として使えるかは未検証（同じ VM では、すでに入っているため、検証にならない）。**再利用には向かないと判断し、ISO 方式を本命にする。**
+- 日本語化（Windows Update 経由）は、この回、約 40 分だった。
