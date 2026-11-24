@@ -77,6 +77,9 @@ $commands = @(
             @{ Name = 'SnapshotResourceGroupName'; Prompt = 'スナップショットを置く RG（空 = VM と同じ）' },
             @{ Name = 'StopVm'; Prompt = '取る前に VM を停止する（推奨）'; Kind = 'Switch'; Default = $true },
             @{ Name = 'StartAfter'; Prompt = '取った後に VM を起動し直す'; Kind = 'Switch'; Default = $false }) },
+    @{ Label = 'Show-VMBackup      : バックアップ（スナップショット）を一覧表示（読み取り専用）'; Script = 'Show-VMBackup.ps1'; Danger = $false
+       Params = @(@{ Name = 'ResourceGroupName'; Prompt = 'スナップショットのある RG（空 = サブスクリプション全体）' },
+            @{ Name = 'VmName'; Prompt = '元の VM 名で絞る（空 = すべて）' }) },
     @{ Label = 'Restore-VM         : スナップショットから、新しい VM を別 RG に作る（復元）'; Script = 'Restore-VM.ps1'; Danger = $true
        Note = '課金が発生する。Entra ID のログインは、Enable-EntraLogin をやり直す。元の VM と、同じ名前・SID になるため、別の VNet に作る。'
        Params = @(

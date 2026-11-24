@@ -48,6 +48,10 @@ $commands = @(
             @{ Name = 'ContainerName'; Prompt = 'コンテナー'; Default = 'langpack' },
             @{ Name = 'FilePath'; Prompt = 'アップロードするファイルのパス'; Required = $true },
             @{ Name = 'BlobName'; Prompt = 'BLOB 名（空 = windows-server-2025/<ファイル名>）' }) },
+    @{ Label = 'Show-StorageFile       : コンテナーの格納物（BLOB）を一覧表示（読み取り専用）'; Script = 'Show-StorageFile.ps1'; Danger = $false
+       Params = @($rg, $sa,
+            @{ Name = 'ContainerName'; Prompt = 'コンテナー（空 = すべて）' },
+            @{ Name = 'Prefix'; Prompt = 'BLOB 名の先頭で絞る（空 = 絞らない）' }) },
     @{ Label = 'Show-Storage           : 状態を表示（読み取り専用）'; Script = 'Show-Storage.ps1'; Danger = $false
        Params = @($rg, $sa) },
     @{ Label = 'Remove-StorageAccount  : ストレージアカウントを削除'; Script = 'Remove-StorageAccount.ps1'; Danger = $true; Destroy = $true
