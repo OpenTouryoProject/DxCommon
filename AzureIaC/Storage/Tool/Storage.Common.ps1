@@ -226,6 +226,23 @@ function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
 # ==============================================================================
 
 # 削除などの確認。-Force のときは確認しない。
+# ストレージアカウントを取得する。見つからないときは、サブスクリプション内の一覧を添えて止まる（名前の入力ミスに気づけるように）。
+function Get-StorageAccountOrThrow([string]$ResourceGroupName, [string]$StorageAccountName) {
+    $sa = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -ErrorAction SilentlyContinue
+    if ($sa) { return $sa }
+    $msg = "ストレージアカウント '$StorageAccountName'（RG: $ResourceGroupName）が見つかりません。"
+    try {
+        $all = @(Get-AzStorageAccount -ErrorAction Stop)
+        if ($all.Count -gt 0) {
+            $msg += "`n  このサブスクリプションにあるストレージアカウント（RG / 名前）:"
+            foreach ($a in $all) { $msg += ("`n    {0} / {1}" -f $a.ResourceGroupName, $a.StorageAccountName) }
+        }
+        else { $msg += "`n  このサブスクリプションには、ストレージアカウントがありません。" }
+    }
+    catch { }
+    throw $msg
+}
+
 function Confirm-Action([string]$Message, [switch]$Force) {
     if ($Force) { return $true }
     return (Read-YesNo $Message $false)

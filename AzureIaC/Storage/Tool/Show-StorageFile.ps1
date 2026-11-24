@@ -35,8 +35,7 @@ function Format-ByteSize([long]$Bytes) {
     return "$Bytes B"
 }
 
-$sa = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -ErrorAction SilentlyContinue
-if (-not $sa) { throw "ストレージアカウント '$StorageAccountName'（RG: $ResourceGroupName）が見つかりません。" }
+$sa = Get-StorageAccountOrThrow $ResourceGroupName $StorageAccountName
 $ctx = New-AzStorageContext -StorageAccountName $StorageAccountName -UseConnectedAccount
 
 try {

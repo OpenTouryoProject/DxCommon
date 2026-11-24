@@ -14,8 +14,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Storage.Common.ps1')
 $ctx = Assert-AzLogin
 
-$sa = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -ErrorAction SilentlyContinue
-if (-not $sa) { throw "ストレージアカウント '$StorageAccountName'（RG: $ResourceGroupName）が見つかりません。" }
+$sa = Get-StorageAccountOrThrow $ResourceGroupName $StorageAccountName
 
 Say 'ストレージアカウント:' -Color Cyan
 $sa | Format-Table StorageAccountName, Location, @{ n = 'Sku'; e = { $_.Sku.Name } }, Kind, MinimumTlsVersion, AllowBlobPublicAccess -AutoSize | Out-Host

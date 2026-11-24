@@ -10,7 +10,7 @@
     ※ DiskSizeGB は、ディスクの容量（プロビジョニング）。増分スナップショットの課金は、実際に使っている分だけ。
 
 .PARAMETER ResourceGroupName
-    スナップショットのある RG。空にすると、サブスクリプション全体。
+    スナップショットのある RG。省略（空）すると、サブスクリプション全体。
 
 .PARAMETER VmName
     元の VM 名で絞る（タグ dx-source-vm）。
@@ -20,7 +20,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$ResourceGroupName = 'hogeRG',
+    [string]$ResourceGroupName,   # 省略（空）= サブスクリプション全体
     [string]$VmName,
     [switch]$All
 )
