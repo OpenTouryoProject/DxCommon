@@ -142,8 +142,16 @@ function Show-ErrorHint([string]$Message) {
 }
 
 # 対話メニュー本体。
-#   Commands: @{ Label; Script; Params = @(Spec...); Note; Danger = $true/$false }
+#   Commands: @{ Label; Script; Params = @(Spec...); Note; Danger = $true/$false }（表示は、Script の昇順に、自動で並べる）
 function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
+    # メニューは、スクリプト名の昇順（大文字小文字を区別しない）に並べる。同じスクリプトの項目は、定義した順。
+    # 項目を足すときに、並び順を考えなくてよい。
+    $keys = @(); $i = 0
+    foreach ($c in $Commands) { $keys += ($c.Script.ToLowerInvariant() + '|' + ($i++).ToString('D4')) }
+    $items = @($Commands)
+    [Array]::Sort($keys, $items, [StringComparer]::Ordinal)
+    $Commands = $items
+
     Say "==== $Title ====" -Color Green
     Say '流れ: コマンド選択 → オプション選択 → 確認 → GO / NOGO（q で終了 / b で戻る）' -Color DarkGray
     try {
