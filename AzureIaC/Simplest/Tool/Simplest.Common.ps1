@@ -146,10 +146,14 @@ function Show-ErrorHint([string]$Message) {
 # 対話メニュー本体。
 #   Commands: @{ Label; Script; Params = @(Spec...); Note; Danger = $true/$false }（表示は、Script の昇順に、自動で並べる）
 function Start-ToolMenu([string]$Title, [object[]]$Commands, [string]$ToolDir) {
-    # メニューは、スクリプト名の昇順（大文字小文字を区別しない）に並べる。同じスクリプトの項目は、定義した順。
+    # メニューは、スクリプト名の昇順（大文字小文字を区別しない）に並べる。ただし、Test-Prerequisites は、先頭に固定する。
+    # 同じスクリプトの項目は、定義した順。
     # 項目を足すときに、並び順を考えなくてよい。
     $keys = @(); $i = 0
-    foreach ($c in $Commands) { $keys += ($c.Script.ToLowerInvariant() + '|' + ($i++).ToString('D4')) }
+    foreach ($c in $Commands) {
+        $pin = if ($c.Script -eq 'Test-Prerequisites.ps1') { '0' } else { '1' }
+        $keys += ($pin + '|' + $c.Script.ToLowerInvariant() + '|' + ($i++).ToString('D4'))
+    }
     $items = @($Commands)
     [Array]::Sort($keys, $items, [StringComparer]::Ordinal)
     $Commands = $items
