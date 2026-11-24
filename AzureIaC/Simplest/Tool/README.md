@@ -1,6 +1,6 @@
 # Simplest - Tool
 
-[Research](../Research/README.md) を Azure PowerShell にしたもの。
+[Research](../Research/Concept.md) を Azure PowerShell にしたもの。
 Azure Bastion、Jumpbox VM、サンドボックス VM、およびその間の VNet ピアリングを構築する。
 
 ## 前提

@@ -4,8 +4,8 @@
 This IaC builds single Azure Linux VM.
 
 ### Cloud Shell
-- [Set environment variables.](./README.md)
-- [Resource groups should be created in advance.](./README.md)
+- [Set environment variables.](./Concept.md)
+- [Resource groups should be created in advance.](./Concept.md)
 
 - create sshkey
 ```Bash
@@ -43,7 +43,7 @@ az network nsg rule create \
 
 ### WSL2
 - Download hoge file from Cloud Shell.
-- [Set environment variables.](./README.md)
+- [Set environment variables.](./Concept.md)
 
 #### ssh
 ```Bash

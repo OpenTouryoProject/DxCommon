@@ -3,7 +3,7 @@
     単体の Azure VM（Windows または Linux）を、専用の VNet / Public IP / NSG つきで作成する。
 
 .DESCRIPTION
-    Research の README.md / Windows.md / Linux.md を Azure PowerShell に置き換えたもの。
+    Research の Concept.md / Windows.md / Linux.md を Azure PowerShell に置き換えたもの。
       Windows: RDP(3389) を許可する NSG ルールを付ける。
       Linux  : SSH 鍵（-SshKeyPath）で SSH(22) を許可する。鍵が無ければ ssh-keygen で作成し（パスフレーズは対話入力）、
                公開鍵を Azure の SSH キーリソース（<VmName>-sshkey）にも登録する。

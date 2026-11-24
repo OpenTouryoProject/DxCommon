@@ -3,7 +3,7 @@
     Azure Storage（RG / ストレージアカウント / ロール割り当て / コンテナ）を作成する。
 
 .DESCRIPTION
-    Research の Storage/README.md を Azure PowerShell に置き換えたもの。
+    Research の Storage/Concept.md を Azure PowerShell に置き換えたもの。
     既に存在するリソースはスキップする。ストレージアカウント名はグローバルで一意である必要がある。
     操作ユーザーに "Storage Blob Data Contributor" を割り当て、Azure AD 認証でコンテナを作成する。
     ロールの反映待ちでコンテナ作成に失敗した場合は、数回リトライする。

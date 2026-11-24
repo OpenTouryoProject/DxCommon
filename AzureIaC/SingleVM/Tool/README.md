@@ -1,6 +1,6 @@
 # SingleVM - Tool
 
-[Research](../Research/README.md) を Azure PowerShell にしたもの。
+[Research](../Research/Concept.md) を Azure PowerShell にしたもの。
 単体の Azure VM（Windows または Linux）を、専用の VNet・Public IP・NSG つきで構築する。
 
 ## 前提

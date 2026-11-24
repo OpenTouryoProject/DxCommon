@@ -1,51 +1,15 @@
-# Single Azure VM
+# SingleVM（Research）
 
-## IaC
-This IaC builds single Azure VM.
+1 台の Azure VM（Windows / Linux）を作る手順の調査。
 
-### Variables
+## ファイル
+- [Concept.md](./Concept.md): 調査した手順（Azure CLI / Azure PowerShell のコマンド）。
+- [Windows.md](./Windows.md) / [Linux.md](./Linux.md): OS ごとの VM の作成手順。
+- [Notes.md](./Notes.md): Tool の作成と、実機での確認で分かったこと（調査メモ）。
 
+## Concept.md の内容
+- 変数（場所、サイズ、イメージ）
+- RG と VM の作成（[Windows](./Windows.md) / [Linux](./Linux.md)）
 
-#### Define1
-```Bash
-location=japaneast
-yourRgName=hogeRG
-vmName=hogeVM
-vmUser=[...]
-vmPassword=[...]
-```
-
-#### Define2
-```Bash
-az vm list-sizes --location $location --output table
-az vm image list --location $location --output table
-```
-
-```Bash
-vmSize=Standard_A8_v2
-vmOS=UbuntuLTS or Win20..
-```
-
-#### Check
-```Bash
-echo $location
-echo $yourRgName
-echo $vmSize
-echo $vmOS
-echo $vmName
-```
-
-### Creating
-
-#### RG
-```Bash
-az group create --name $yourRgName --location $location
-```
-
-#### VM
-
-- [Windows](./Windows.md)
-- [Linux](./Linux.md)
-
-### 調査メモ
-Tool 作成・実機確認で分かったことは、[Notes.md](./Notes.md) にまとめた。
+## Tool
+同じ手順を Azure PowerShell のスクリプトにしたものが [Tool](../Tool/README.md)（対話メニューつき）。

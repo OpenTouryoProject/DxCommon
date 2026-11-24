@@ -4,8 +4,8 @@
 This IaC builds single Azure Windows VM.
 
 ### Cloud Shell
-- [Set environment variables.](./README.md)
-- [Resource groups should be created in advance.](./README.md)
+- [Set environment variables.](./Concept.md)
+- [Resource groups should be created in advance.](./Concept.md)
 
 - create vm
 ```Bash

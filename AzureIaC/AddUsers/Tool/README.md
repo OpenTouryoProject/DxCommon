@@ -1,6 +1,6 @@
 # AddUsers - Tool
 
-[Research](../Research/README.md) を Azure PowerShell にしたもの。
+[Research](../Research/Concept.md) を Azure PowerShell にしたもの。
 カスタムロールを作り、テナントにユーザーを追加して、ロールを付与する。
 
 ## 前提

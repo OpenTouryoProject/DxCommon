@@ -1,6 +1,6 @@
 # Storage - Tool
 
-[Research](../Research/README.md) を Azure PowerShell にしたもの。
+[Research](../Research/Concept.md) を Azure PowerShell にしたもの。
 Azure Storage（ストレージアカウントと BLOB コンテナ）を構築し、自分のアカウントが Azure AD 認証で使えるようにする。
 
 ## 前提

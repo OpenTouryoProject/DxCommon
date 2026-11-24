@@ -1,65 +1,15 @@
-# Storage
+# Storage（Research）
 
-## IaC
-This IaC builds Azure Storage.
+Azure Storage（ストレージ アカウント、コンテナ、ロール）を作る手順の調査。
 
-### Variables
+## ファイル
+- [Concept.md](./Concept.md): 調査した手順（Azure CLI / Azure PowerShell のコマンド）。
+- [Notes.md](./Notes.md): Tool の作成と、実機での確認で分かったこと（調査メモ）。
 
-#### Define
-```Bash
-subscriptionID=$(az account show --query id --output tsv)
-userPrincipalName=$(az ad signed-in-user show --query userPrincipalName --output tsv)
-location=japaneast #westus2
-storageRgName=DxCmnRG
-storageAccountName=osscjpdevinfra
-containerName=dxcmn
-```
+## Concept.md の内容
+- 変数
+- ストレージ アカウント、コンテナ、ロールの作成
+- 参考
 
-#### Check
-```Bash
-echo $subscriptionID
-echo $userPrincipalName
-echo $location
-echo $storageRgName
-echo $storageAccountName
-echo $containerName
-```
-
-### Creating
-
-```Bash
-az group create --name $storageRgName --location $location
-
-az storage account create \
-  --name $storageAccountName \
-  --resource-group $storageRgName \
-  --location $location \
-  --sku Standard_LRS
-
-az role assignment create \
-  --role "Storage Blob Data Contributor" \
-  --assignee $userPrincipalName \
-  --scope /subscriptions/${subscriptionID}/resourceGroups/${storageRgName}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}
-
-az storage container create \
-  --account-name $storageAccountName \
-  --name $containerName \
-  --auth-mode login
-```
-
-Add as needed.
-```Bash
-az storage account network-rule add \
-  --account-name $storageAccountName \
-  --resource-group $storageRgName \
-  --ip-address xxx.xxx.xxx.xxx
-
-az storage account network-rule list --account-name $storageAccountName
-```
-
-### Reference
-- Azureのストレージ - マイクロソフト系技術情報 Wiki > IaC化  
-https://techinfoofmicrosofttech.osscons.jp/index.php?Azure%E3%81%AE%E3%82%B9%E3%83%88%E3%83%AC%E3%83%BC%E3%82%B8#ea519673
-
-### 調査メモ
-Tool 作成・実機確認で分かったことは、[Notes.md](./Notes.md) にまとめた。
+## Tool
+同じ手順を Azure PowerShell のスクリプトにしたものが [Tool](../Tool/README.md)（対話メニューつき）。
